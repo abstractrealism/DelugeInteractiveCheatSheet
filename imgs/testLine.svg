@@ -1,4 +1,27 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<svg id="uuid-90046bcf-f132-4434-b9c1-2eef4955f6a7" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 294 196.67">
+  <defs>
+    <style>
+      .uuid-c680c224-6960-49a3-a892-38daeab2979a {
+        fill: none;
+        stroke: #231f20;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        stroke-width: 2px;
+        stroke-dasharray: 300; /* Change this value according to your polyline length */
+        stroke-dashoffset: 300;
+        animation: dash 3s linear forwards; /* Animation definition */
+      }
+      @keyframes dash {
+        to {
+          stroke-dashoffset: 0; /* Animation to reveal the polyline */
+        }
+      }
+    </style>
+  </defs>
+  <polyline class="uuid-c680c224-6960-49a3-a892-38daeab2979a" points="72.98 121.98 135.59 62.93 226.03 62.93"/>
+</svg>
+
+<!-- <?xml version="1.0" encoding="UTF-8"?>
 <svg id="uuid-90046bcf-f132-4434-b9c1-2eef4955f6a7" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 294 196.67">
   <defs>
     <style>
@@ -12,4 +35,4 @@
     </style>
   </defs>
   <polyline class="uuid-c680c224-6960-49a3-a892-38daeab2979a" points="72.98 121.98 135.59 62.93 226.03 62.93"/>
-</svg>
+</svg> -->
