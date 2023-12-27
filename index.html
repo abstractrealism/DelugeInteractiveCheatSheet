@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     
@@ -16,10 +17,15 @@
         <button class = "preset-button" id="presetA">Preset A</button>
 
     </div>
-    <object id="testGrid" type="image/svg+xml" data="imgs/Untitled.svg"></object>
-    <!-- <object id="testGrid" type="image/svg+xml" data="imgs/Untitled.svg"></object> -->
-    <object id="lineSVG" type="image/svg+xml" data="imgs/testLine.svg" style="max-width: 50%;"></object>
-    
+
+    <div id = 'image-stack'>
+        <div id = 'deluge-div'>
+            <object id="testGrid" type="image/svg+xml" data="imgs/Deluge.svg"></object>
+        </div>
+        <!-- <object id="testGrid" type="image/svg+xml" data="imgs/Untitled.svg"></object> -->
+        <object id="lineSVG" type="image/svg+xml" data="imgs/testLine.svg" style="max-width: 50%;"></object>
+        
+    </div>
     
     <script src="main.js"></script>
 </body>
