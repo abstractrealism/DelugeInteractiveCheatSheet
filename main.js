@@ -27,28 +27,63 @@ window.addEventListener('load', function() {
         // }
 
     // deluge:
-    var groups = svgDoc.querySelectorAll("svg > g");
     // lg(delugeSvgDoc.querySelector('#mainGrid').children[0].children[0].children[0].tagName);
     
-    lg(deluge.mainGrid.children.length)
-    
+    // lg(deluge.mainGrid.children.length)
+
+        const testButton = document.getElementById("testButton");
+        testButton.addEventListener('click', testing);
+
+
     ///////DELUGE OBJECT SET UP//////
     var delugeSvgDoc = document.querySelector("#delugeSVG").contentDocument;
+    // var groups = delugeSvgDoc.querySelectorAll("svg > g");
+    // lg(groups.length)
     
     //MAIN GRID
     deluge.mainGrid = delugeSvgDoc.querySelector('#mainGrid');
+    deluge.mainGridPads = [];
+
+    // for (var x = 0; x < deluge.mainGridPads.length; x++) {
+    //     deluge.mainGridPads[x].addEventListener('click', function(event){
+    //         lg("working?")
+    //         padChange(event.target)
+    //     })
+    // }
+    deluge.mainGrid.addEventListener('click', function(event){
+        lg(event.target)
+        // lg(event.target.style)
+        const fillColor = window.getComputedStyle(event.target).getPropertyValue('fill');
+
+        // Check if it's the initial gray color
+        if (fillColor === "rgb(149, 149, 149)" || fillColor === "rgb(21, 246, 253)") {  // Checking both gray and the initial color
+            setRandomColor(event.target);
+            lg("in here");
+        } else {
+            lg("in there");
+            event.target.style.fill = "rgb(149, 149, 149)";  // Set back to gray
+        }
+        
+
+    });
+    function padChange(pad) {
+        setRandomColor(pad)
+    }
+
     for (var x = 0; x < deluge.mainGrid.children.length; x++) {
         deluge.mainGrid['row' + x] = deluge.mainGrid.children[x];
         for (var y = 0; y < deluge.mainGrid['row' + x].children.length; y++) {
-            deluge.mainGrid['row' + x]['pad' + y] = deluge.mainGrid['row' + x].children[y];
+            deluge.mainGrid['row' + x]['pad' + y] = deluge.mainGrid['row' + x].children[y].children[0];
+            deluge.mainGridPads.push(deluge.mainGrid['row' + x]['pad' + y]);
         }
     }
 
     try {
         // lg(deluge.mainGrid.row3.pad3.children[0])
-        deluge.mainGrid.row4.pad4.children[0].style.fill = "#ff00ff";
         // deluge.mainGrid.row3.pad3.children[0].fill = "#ff0000";
-        deluge.mainGrid.row2.pad2.children[0].setAttribute('fill', "#00ff00");
+        
+        deluge.mainGrid.row4.pad4.style.fill = "#ff00ff";
+        // deluge.mainGrid.row2.pad2.children[0].setAttribute('fill', "#00ff00");
 
         // lg(deluge.mainGrid.row3.pad3.children[0].fill)
         // changeColor(deluge.mainGrid.row3.pad3.children[0], "#ff0000");
@@ -57,20 +92,24 @@ window.addEventListener('load', function() {
     }
     
     var presetDiv = document.getElementById('preset-div');
-    presetDiv.addEventListener('click', function(event){
+        presetDiv.addEventListener('click', function(event){
         applyPreset(event.target.id)
     });
     
     function testing() {
         
-        for (var z = 0; z < groups.length; z++) {
-            // groups[z].children[0].setAttribute('fill', 'purple');
-            setRandomColor(groups[z].children[0]);
+        for (var x = 0; x < deluge.mainGridPads.length; x++) {
+            setRandomColor(deluge.mainGridPads[x])
         }
-        groups[3].style.visibility = "hidden";
+
+        // for (var z = 0; z < groups.length; z++) {
+        //     // groups[z].children[0].setAttribute('fill', 'purple');
+        //     setRandomColor(groups[z].children[0]);
+        // }
+        // groups[3].style.visibility = "hidden";
         
-        // var bob = svgDoc.getElementById('bob');
-        // bob.children[0].setAttribute('fill', 'green');
+        // // var bob = svgDoc.getElementById('bob');
+        // // bob.children[0].setAttribute('fill', 'green');
     }
 
     function changeColor(button, color) {
@@ -81,11 +120,16 @@ window.addEventListener('load', function() {
 
     function applyPreset(targetID) {
         var presetToApply = presets[targetID];
-        groups[0].children[0].fill=  presetToApply.tl;
-        groups[1].children[0].fill=  presetToApply.tr;
-        groups[2].children[0].fill= presetToApply.bl;
-        groups[3].children[0].fill= presetToApply.br;
+        // groups[0].children[0].fill= presetToApply.tl;
+        // groups[1].children[0].fill= presetToApply.tr;
+        // groups[2].children[0].fill= presetToApply.bl;
+        // groups[3].children[0].fill= presetToApply.br;
         // groups[3].children[0].setAttribute('fill', presetToApply.br);
+        lg (deluge.mainGrid.row2.pad2.style.fill)
+        deluge.mainGrid.row2.pad2.style.fill = "#ff0000";
+        deluge.mainGrid.row2.pad3.style.fill = presetToApply.tr;
+        deluge.mainGrid.row3.pad2.style.fill = presetToApply.bl;
+        deluge.mainGrid.row3.pad3.style.fill = presetToApply.br;
         
     }
 });//end on load
@@ -169,7 +213,6 @@ function TestPreset(tl, tr, bl, br) {
 }
 
 function setRandomColor(target) {
-    var randomColor = '#' + Math.floor(Math.random()*16777215).toString(16)
-    // target.color = randomColor;
-    target.setAttribute('fill', randomColor);
+    var randomColor = '#' + Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0');
+    target.style.fill = randomColor;  // Use style.fill instead of setAttribute
 }
