@@ -27,34 +27,30 @@ window.addEventListener('load', function() {
         // }
 
     // deluge:
-    var delugeSvgDoc = document.querySelector("#delugeSVG").contentDocument;
     // var groups = svgDoc.querySelectorAll("svg > g");
     // lg(delugeSvgDoc.querySelector('#mainGrid').children[0].children[0].children[0].tagName);
-    deluge.mainGrid = delugeSvgDoc.querySelector('#mainGrid');
-    // deluge.mainGrid.row0 = deluge.mainGrid.children[0];
-    // deluge.mainGrid.row1 = deluge.mainGrid.children[1];
-    // deluge.mainGrid.row2 = deluge.mainGrid.children[2];
-    // deluge.mainGrid.row3 = deluge.mainGrid.children[3];
-    // deluge.mainGrid.row4 = deluge.mainGrid.children[4];
-    // deluge.mainGrid.row5 = deluge.mainGrid.children[5];
-    // deluge.mainGrid.row6 = deluge.mainGrid.children[6];
-    // deluge.mainGrid.row7 = deluge.mainGrid.children[7];
     
     // lg(deluge.mainGrid.children.length)
+    
+    ///////DELUGE OBJECT SET UP//////
+    var delugeSvgDoc = document.querySelector("#delugeSVG").contentDocument;
+    
+    //MAIN GRID
+    deluge.mainGrid = delugeSvgDoc.querySelector('#mainGrid');
     for (var x = 0; x < deluge.mainGrid.children.length; x++) {
         deluge.mainGrid['row' + x] = deluge.mainGrid.children[x];
         for (var y = 0; y < deluge.mainGrid['row' + x].children.length; y++) {
-            deluge.mainGrid['row' + x]['pad' + y] = deluge.mainGrid['row' + x].children[y]
+            deluge.mainGrid['row' + x]['pad' + y] = deluge.mainGrid['row' + x].children[y];
         }
     }
 
     try {
-        lg(deluge.mainGrid.row3.pad3.children[0])
+        // lg(deluge.mainGrid.row3.pad3.children[0])
         deluge.mainGrid.row4.pad4.children[0].style.fill = "#ff00ff";
-        deluge.mainGrid.row3.pad3.children[0].fill = "#ff0000";
+        // deluge.mainGrid.row3.pad3.children[0].fill = "#ff0000";
         deluge.mainGrid.row2.pad2.children[0].setAttribute('fill', "#00ff00");
 
-        lg(deluge.mainGrid.row3.pad3.children[0].fill)
+        // lg(deluge.mainGrid.row3.pad3.children[0].fill)
         // changeColor(deluge.mainGrid.row3.pad3.children[0], "#ff0000");
     } catch (error) {
         lg(error)
