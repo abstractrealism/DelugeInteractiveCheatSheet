@@ -28,9 +28,9 @@ window.addEventListener('load', function() {
 
     // deluge:
     var groups = svgDoc.querySelectorAll("svg > g");
-    lg(delugeSvgDoc.querySelector('#mainGrid').children[0].children[0].children[0].tagName);
+    // lg(delugeSvgDoc.querySelector('#mainGrid').children[0].children[0].children[0].tagName);
     
-    // lg(deluge.mainGrid.children.length)
+    lg(deluge.mainGrid.children.length)
     
     ///////DELUGE OBJECT SET UP//////
     var delugeSvgDoc = document.querySelector("#delugeSVG").contentDocument;
