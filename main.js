@@ -224,6 +224,7 @@ function getRandomColor() {
     return '#' + Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0');
 }
 
+//Need to test that this works and figure out how best to implement it, where to draw the info from, etc. 
 function showPopupNearPad(pad, message) {
     const rect = pad.getBoundingClientRect();
     const popup = document.createElement("div");
