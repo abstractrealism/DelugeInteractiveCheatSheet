@@ -247,32 +247,37 @@ function updateUI() {
 
     switch (contextManager.currentContext) {
         case "song":
-            recolorButton(deluge.songButton, "#00bbff");
+            recolorButton(deluge.songButton, "#00bbff"); // Song button stays lit
             if (contextManager.displayMode === "performance") {
-                recolorButton(deluge.topButtons.keyboard, "#00bbff");
+                recolorButton(deluge.topButtons.keyboard, "#00bbff"); // Keyboard button lit in performance
             }
             break;
+
         case "arranger":
             if (contextManager.displayMode === "performance") {
-                recolorButton(deluge.topButtons.keyboard, "#00bbff");
-            } else {
-                let isBlue = false;
-                arrangerBlinkInterval = setInterval(() => {
-                    isBlue = !isBlue;
-                    recolorButton(deluge.songButton, isBlue ? "#00bbff" : "#959595");
-                }, 500);
+                recolorButton(deluge.topButtons.keyboard, "#00bbff"); // Keyboard button lit in performance
             }
+            // Blink the song button
+            let isSongBlue = false;
+            arrangerBlinkInterval = setInterval(() => {
+                isSongBlue = !isSongBlue;
+                recolorButton(deluge.songButton, isSongBlue ? "#00bbff" : "#959595");
+            }, 500);
             break;
+
         case "clip":
             if (contextManager.displayMode === "keyboard") {
-                recolorButton(deluge.topButtons.keyboard, "#00bbff");
-            } else if (contextManager.clipBlinking && contextManager.displayMode === "automation") {
-                let isBlue = false;
+                recolorButton(deluge.topButtons.keyboard, "#00bbff"); // Keyboard button lit in keyboard view
+            }
+            if (contextManager.displayMode === "automation") {
+                // Blink the clip button in automation view
+                let isClipBlue = false;
                 clipBlinkInterval = setInterval(() => {
-                    isBlue = !isBlue;
-                    recolorButton(deluge.clipButton, isBlue ? "#00bbff" : "#959595");
+                    isClipBlue = !isClipBlue;
+                    recolorButton(deluge.clipButton, isClipBlue ? "#00bbff" : "#959595");
                 }, 500);
             } else {
+                // Clip button lit in default or keyboard view
                 recolorButton(deluge.clipButton, "#00bbff");
             }
             break;
@@ -412,7 +417,7 @@ function setRandomColor(target) {
 
 function recolorButton(button, color) {
     if (button && button.children[0]) {
-        console.log(`Recoloring ${button.id || "unknown"} to ${color}`);
+        // console.log(`Recoloring ${button.id || "unknown"} to ${color}`);
         button.children[0].style.fill = color;
     } else {
         console.warn("Invalid button or button structure:", button);
