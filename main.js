@@ -11,6 +11,7 @@ const contextManager = {
     lastClipSubView: "default", // Tracks last clip sub-view
     lastNonKeyboardView: "default", // Tracks the last non-keyboard clip view
     clipBlinking: false, // Flag for clip button blinking
+    songAffectEntire: false, //is song mode in Affect Entire
 
     views: {
         song: ["rows", "grid", "performance"],
@@ -27,7 +28,7 @@ var presets = {};
 presets['presetA'] = new TestPreset('#aa23b0', '#19380a', '#56b390', '#808080')
 
 const deluge = {}; // Global object for all SVG elements
-
+deluge.allButtons = [];
 
     ///////DELUGE OBJECT SET UP//////
 // =====================
@@ -60,13 +61,13 @@ function initializeSVGControls() {
     deluge.topButtons = deluge.topButtons || {};
 
     // Add keyboard button to topButtons
-    deluge.topButtons.keyboard = delugeSvgDoc.querySelector("#keyboard");
+    deluge.allButtons.push(deluge.topButtons.keyboard = delugeSvgDoc.querySelector("#keyboard"));
     // Add other topButtons
-    deluge.topButtons.affectEntire = delugeSvgDoc.querySelector("#affectEntire");
+    deluge.allButtons.push(deluge.topButtons.affectEntire = delugeSvgDoc.querySelector("#affectEntire"));
 
     // ============== Song and Clip Buttons (Already Handled) ==============
-    deluge.songButton = delugeSvgDoc.querySelector("#songButton");
-    deluge.clipButton = delugeSvgDoc.querySelector("#clipButton");
+    deluge.allButtons.push(deluge.songButton = delugeSvgDoc.querySelector("#songButton"));
+    deluge.allButtons.push(deluge.clipButton = delugeSvgDoc.querySelector("#clipButton"));
 
     // Add listeners to Song and Clip buttons
         ////SONG BUTTON!//////
@@ -114,49 +115,8 @@ function initializeSVGControls() {
             
         }
     });
-    // ============== Mute and Audition Columns ==============
-    deluge.muteColumn = Array.from(delugeSvgDoc.querySelector("#muteColumn").children);
-    deluge.auditionColumn = Array.from(delugeSvgDoc.querySelector("#auditionColumn").children);
-
-    // ============== Performance Buttons ==============
-    deluge.performanceButtons = Array.from(delugeSvgDoc.querySelector("#performanceButtons").children);
-
-    // ============== Clip Type Buttons ==============
-    deluge.clipTypeButtons = Array.from(delugeSvgDoc.querySelector("#clipTypeButtons").children);
-
-    // ============== Add Interaction or Debug Logging ==============
-    // Example: Add click listeners to the muteColumn
-    deluge.muteColumn.forEach((pad, index) => {
-        pad.addEventListener("click", () => {
-            console.log(`Mute pad ${index + 1} clicked.`);
-            // Add additional functionality here
-        });
-    });
-
-    // Example: Add click listeners to the auditionColumn
-    deluge.auditionColumn.forEach((pad, index) => {
-        pad.addEventListener("click", () => {
-            console.log(`Audition pad ${index + 1} clicked.`);
-            // Add additional functionality here
-        });
-    });
-
-    // Example: Add click listeners to performanceButtons
-    deluge.performanceButtons.forEach((button, index) => {
-        button.addEventListener("click", () => {
-            console.log(`Performance button ${index + 1} clicked.`);
-            // Add additional functionality here
-        });
-    });
-
-    // Example: Add click listeners to clipTypeButtons
-    deluge.clipTypeButtons.forEach((button, index) => {
-        button.addEventListener("click", () => {
-            console.log(`Clip type button ${index + 1} clicked.`);
-            // Add additional functionality here
-        });
-    });
-    
+   
+    /////////   KEYBOARD BUTTON
     deluge.topButtons.keyboard.addEventListener("click", () => {
         if (contextManager.currentContext === "arranger") {
             if (contextManager.displayMode === "performance") {
@@ -185,7 +145,69 @@ function initializeSVGControls() {
             }
         }
     });
+   
+    deluge.topButtons.affectEntire.addEventListener("click", () => {
+        if (contextManager.currentContext === "arranger" || contextManager.currentContext === "song") {
+            //toggle affect entire button for song modes
+            contextManager.songAffectEntire = !contextManager.songAffectEntire;
+            updateUI();
+        } else if (false && contextManager.currentContext === "clip" && cliptype === "kit") {
+            //TD: remove the false once kit clips are implemented
+            //kit.affectEntire = false or somethinglike that
+        }
+    });
 
+
+    // ============== Mute and Audition Columns ==============
+    deluge.muteColumn = Array.from(delugeSvgDoc.querySelector("#muteColumn").children);
+    deluge.auditionColumn = Array.from(delugeSvgDoc.querySelector("#auditionColumn").children);
+
+    // ============== Performance Buttons ==============
+    deluge.performanceButtons = Array.from(delugeSvgDoc.querySelector("#performanceButtons").children);
+
+    // ============== Clip Type Buttons ==============
+    deluge.clipTypeButtons = Array.from(delugeSvgDoc.querySelector("#clipTypeButtons").children);
+
+    // ============== Add Interaction or Debug Logging ==============
+    // Example: Add click listeners to the muteColumn
+    deluge.muteColumn.forEach((pad, index) => {
+        deluge.allButtons.push(pad);
+        pad.addEventListener("click", () => {
+            console.log(`Mute pad ${index + 1} clicked.`);
+            // Add additional functionality here
+        });
+    });
+
+    // Example: Add click listeners to the auditionColumn
+    deluge.auditionColumn.forEach((pad, index) => {
+        deluge.allButtons.push(pad);
+        pad.addEventListener("click", () => {
+            console.log(`Audition pad ${index + 1} clicked.`);
+            // Add additional functionality here
+        });
+    });
+
+    // Example: Add click listeners to performanceButtons
+    deluge.performanceButtons.forEach((button, index) => {
+        deluge.allButtons.push(button);
+        button.addEventListener("click", () => {
+            console.log(`Performance button ${index + 1} clicked.`);
+            // Add additional functionality here
+        });
+    });
+
+    // Example: Add click listeners to clipTypeButtons
+    deluge.clipTypeButtons.forEach((button, index) => {
+        deluge.allButtons.push(button);
+        button.addEventListener("click", () => {
+            console.log(`Clip type button ${index + 1} clicked.`);
+            // Add additional functionality here
+        });
+    });
+    
+
+
+    deluge.allButtons.push(...deluge.mainGridPads);
     console.log("SVG controls initialized:", deluge);
 }
 
@@ -259,9 +281,12 @@ function updateUI() {
     }
 
     // Reset all buttons to their default color
-    recolorButton(deluge.songButton, "#959595");
-    recolorButton(deluge.clipButton, "#959595");
-    recolorButton(deluge.topButtons.keyboard, "#959595");
+    // recolorButton(deluge.songButton, "#959595");
+    // recolorButton(deluge.clipButton, "#959595");
+    // recolorButton(deluge.topButtons.keyboard, "#959595");
+    for (var z = 0; z < deluge.allButtons.length; z++) {
+        recolorButton(deluge.allButtons[z], "#959595")
+    }
 
     // Clear any previous blinking intervals
     if (arrangerBlinkInterval) clearInterval(arrangerBlinkInterval);
@@ -269,45 +294,64 @@ function updateUI() {
 
     switch (contextManager.currentContext) {
         case "song":
-            recolorButton(deluge.songButton, "#00bbff"); // Song button stays lit
+            recolorButton(deluge.songButton, "#007cff"); // Song button stays lit
             if (contextManager.displayMode === "performance") {
-                recolorButton(deluge.topButtons.keyboard, "#00bbff");
+                recolorButton(deluge.topButtons.keyboard, "#007cff");
             }
+            //affect entire
+            if (contextManager.songAffectEntire == true) {
+                recolorButton(deluge.topButtons.affectEntire, "#ff6700")
+            }
+
+            //end song
             break;
 
         case "arranger":
             if (contextManager.displayMode === "performance") {
-                recolorButton(deluge.topButtons.keyboard, "#00bbff"); // Keyboard button lit in performance
+                recolorButton(deluge.topButtons.keyboard, "#007cff"); // Keyboard button lit in performance
             }
             // Always blink the song button in arranger mode
             let isSongBlue = false;
             arrangerBlinkInterval = setInterval(() => {
                 isSongBlue = !isSongBlue;
-                recolorButton(deluge.songButton, isSongBlue ? "#00bbff" : "#959595");
+                recolorButton(deluge.songButton, isSongBlue ? "#007cff" : "#959595");
             }, 500);
+
+             //affect entire
+             if (contextManager.songAffectEntire == true) {
+                recolorButton(deluge.topButtons.affectEntire, "#ff6700")
+            }
+
+            //end arranger
             break;
 
         case "clip":
+            //affect entire
+            //TD: remove "true" once the logic actually is present
+            if (true || cliptype == "synth" || clip.affectEntire == true) {
+                recolorButton(deluge.topButtons.affectEntire, "#ff6700")
+            }
+            //modes and views
             if (contextManager.displayMode === "keyboard") {
-                recolorButton(deluge.topButtons.keyboard, "#00bbff");
+                recolorButton(deluge.topButtons.keyboard, "#007cff");
                 if (contextManager.lastNonKeyboardView === "automation") {
                     // Keep clip button blinking if last view was automation
                     let isClipBlue = false;
                     clipBlinkInterval = setInterval(() => {
                         isClipBlue = !isClipBlue;
-                        recolorButton(deluge.clipButton, isClipBlue ? "#00bbff" : "#959595");
+                        recolorButton(deluge.clipButton, isClipBlue ? "#007cff" : "#959595");
                     }, 500);
                 } else {
-                    recolorButton(deluge.clipButton, "#00bbff");
+                    recolorButton(deluge.clipButton, "#007cff");
                 }
             } else if (contextManager.displayMode === "automation") {
                 let isClipBlue = false;
                 clipBlinkInterval = setInterval(() => {
                     isClipBlue = !isClipBlue;
-                    recolorButton(deluge.clipButton, isClipBlue ? "#00bbff" : "#959595");
+                    recolorButton(deluge.clipButton, isClipBlue ? "#007cff" : "#959595");
                 }, 500);
             } else {
-                recolorButton(deluge.clipButton, "#00bbff");
+                recolorButton(deluge.clipButton, "#007cff");
             }
             break;
     }
@@ -448,6 +492,8 @@ function recolorButton(button, color) {
     if (button && button.children[0]) {
         // console.log(`Recoloring ${button.id || "unknown"} to ${color}`);
         button.children[0].style.fill = color;
+    } else if (button){
+        button.style.fill = color;
     } else {
         console.warn("Invalid button or button structure:", button);
     }
