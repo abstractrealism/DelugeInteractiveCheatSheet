@@ -12,6 +12,8 @@ const contextManager = {
     lastNonKeyboardView: "default", // Tracks the last non-keyboard clip view
     clipBlinking: false, // Flag for clip button blinking
     songAffectEntire: false, //is song mode in Affect Entire
+    scale: "major",
+    rootNote: "C-2",
 
     views: {
         song: ["rows", "grid", "performance"],
@@ -22,6 +24,11 @@ const contextManager = {
     isValidView(context, subView) {
         return this.views[context] && this.views[context].includes(subView);
     },
+    activeClip: {
+        cliptype: "synth", //other options, kit, midi, cv, audio. not sure I need the same functionality as above for views
+        scaleMode: true,
+        activePerformanceButton: 1, 
+    }
 };
 
 var presets = {};
@@ -326,11 +333,6 @@ function updateUI() {
             break;
 
         case "clip":
-            //affect entire
-            //TD: remove "true" once the logic actually is present
-            if (true || cliptype == "synth" || clip.affectEntire == true) {
-                recolorButton(deluge.topButtons.affectEntire, "#ff6700")
-            }
             //modes and views
             if (contextManager.displayMode === "keyboard") {
                 recolorButton(deluge.topButtons.keyboard, "#007cff");
@@ -353,6 +355,39 @@ function updateUI() {
             } else {
                 recolorButton(deluge.clipButton, "#007cff");
             }
+
+            //affect entire
+            //TD: remove "true" once the logic actually is present
+            if (true || cliptype == "synth" || clip.affectEntire == true) {
+                recolorButton(deluge.topButtons.affectEntire, "#ff6700")
+            }
+
+            //clip type
+            switch (contextManager.activeClip.cliptype) {
+                case "synth":
+                    recolorButton(deluge.clipTypeButtons[0], "#ff1100")
+                    break;
+            
+                case "kit":
+                    recolorButton(deluge.clipTypeButtons[1], "#ff1100")
+                    break;
+            
+                case "midi":
+                    recolorButton(deluge.clipTypeButtons[2], "#ff1100")
+                    break;
+            
+                case "cv":
+                    recolorButton(deluge.clipTypeButtons[3], "#ff1100")
+                    break;
+            
+                case "audio":
+                    // recolorButton(deluge.clipTypeButtons[0], "#ff1100")
+                    break;
+            
+                default:
+                    break;
+            }
+            //end clip
             break;
     }
 }
