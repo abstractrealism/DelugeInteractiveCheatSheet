@@ -70,18 +70,42 @@ function initializeSVGControls() {
 
     // Add listeners to Song and Clip buttons
     deluge.songButton.addEventListener("click", () => {
-        if (contextManager.displayMode === "performance") {
-            // Do nothing if in performance view
-            return;
+        if (contextManager.currentContext === "clip") {
+            // Return to the last song-related mode
+            updateContext(contextManager.lastSongMode);
+        } else if (contextManager.currentContext === "song") {
+            if (contextManager.displayMode === "performance") {
+                // Do nothing in performance view
+                return;
+            }
+            // Switch to arranger
+            updateContext("arranger");
+        } else if (contextManager.currentContext === "arranger") {
+            if (contextManager.displayMode === "performance") {
+                // Do nothing in performance view
+                return;
+            }
+            // Switch to song
+            updateContext("song");
         }
-    
-        updateContext("song");
     });
     
     deluge.clipButton.addEventListener("click", () => {
         if (contextManager.currentContext === "clip") {
-            updateContext("clip", "automation");
+            if (contextManager.displayMode === "keyboard") {
+                // Stay in keyboard view, no toggling
+                return;
+            } else if (contextManager.displayMode === "automation") {
+                // Exit automation view to default
+                contextManager.clipBlinking = false;
+                updateContext("clip", "default");
+            } else {
+                // Enter automation view
+                contextManager.clipBlinking = true;
+                updateContext("clip", "automation");
+            }
         } else {
+            // Enter clip mode
             updateContext("clip");
         }
     });
@@ -131,18 +155,18 @@ function initializeSVGControls() {
     deluge.topButtons.keyboard.addEventListener("click", () => {
         if (contextManager.currentContext === "arranger") {
             if (contextManager.displayMode === "performance") {
-                // Exit performance view to default view
+                // Exit arranger performance view
                 updateContext("arranger", "default");
             } else {
-                // Enter performance view
+                // Enter arranger performance view
                 updateContext("arranger", "performance");
             }
         } else if (contextManager.currentContext === "song") {
             if (contextManager.displayMode === "performance") {
-                // Exit performance view to rows
+                // Exit song performance view
                 updateContext("song", "rows");
             } else {
-                // Enter performance view
+                // Enter song performance view
                 updateContext("song", "performance");
             }
         } else if (contextManager.currentContext === "clip") {
@@ -150,7 +174,8 @@ function initializeSVGControls() {
                 // Exit keyboard view to last non-keyboard view
                 updateContext("clip", contextManager.lastNonKeyboardView);
             } else {
-                // Enter keyboard view
+                // Save last non-keyboard view and enter keyboard view
+                contextManager.lastNonKeyboardView = contextManager.displayMode;
                 updateContext("clip", "keyboard");
             }
         }
@@ -201,42 +226,6 @@ let arrangerBlinkInterval;
 let clipBlinkInterval;
 
 function updateContext(newContext, subView = null) {
-    if (newContext === "song") {
-        if (contextManager.currentContext === "clip") {
-            newContext = contextManager.lastSongMode;
-        } else if (contextManager.currentContext === "song") {
-            if (contextManager.displayMode === "performance") return; // Do nothing in performance
-            newContext = "arranger";
-        } else if (contextManager.currentContext === "arranger") {
-            if (contextManager.displayMode === "performance") return; // Do nothing in performance
-            newContext = "song";
-        }
-    }
-
-    if (newContext === "clip") {
-        if (subView === "keyboard") {
-            if (contextManager.displayMode === "keyboard") {
-                // Return to last non-keyboard view
-                subView = contextManager.lastNonKeyboardView;
-            } else {
-                // Save the last non-keyboard view
-                contextManager.lastNonKeyboardView = contextManager.displayMode;
-                subView = "keyboard";
-            }
-        } else if (contextManager.currentContext === "clip") {
-            if (contextManager.displayMode === "automation") {
-                subView = "default"; // Toggle back to default
-                contextManager.clipBlinking = false;
-            } else {
-                subView = "automation"; // Toggle to automation
-                contextManager.clipBlinking = true;
-            }
-        } else {
-            contextManager.lastClipSubView = subView || "default";
-            contextManager.clipBlinking = false;
-        }
-    }
-
     if (contextManager.views[newContext]) {
         contextManager.currentContext = newContext;
 
