@@ -7,6 +7,7 @@ var lg = (msg) => console.log(msg);
 const contextManager = {
     currentContext: "song",
     displayMode: "rows",
+    lastSongMode: "song", // Tracks the last song-related mode
 
     views: {
         song: ["rows", "grid", "performance"],
@@ -52,15 +53,60 @@ function initializeGrid() {
 function initializeSVGControls() {
     const delugeSvgDoc = document.querySelector("#delugeSVG").contentDocument;
 
-    // Add listeners to SVG buttons
-    delugeSvgDoc.querySelector("#songButton").addEventListener("click", () => {
-        updateContext("song");
+    // ============== Song and Clip Buttons (Already Handled) ==============
+    deluge.songButton = delugeSvgDoc.querySelector("#songButton");
+    deluge.clipButton = delugeSvgDoc.querySelector("#clipButton");
+
+    // Add listeners to these buttons
+    deluge.songButton.addEventListener("click", () => updateContext("song"));
+    deluge.clipButton.addEventListener("click", () => updateContext("clip"));
+
+    // ============== Mute and Audition Columns ==============
+    deluge.muteColumn = Array.from(delugeSvgDoc.querySelector("#muteColumn").children);
+    deluge.auditionColumn = Array.from(delugeSvgDoc.querySelector("#auditionColumn").children);
+
+    // ============== Performance Buttons ==============
+    deluge.performanceButtons = Array.from(delugeSvgDoc.querySelector("#performanceButtons").children);
+
+    // ============== Clip Type Buttons ==============
+    deluge.clipTypeButtons = Array.from(delugeSvgDoc.querySelector("#clipTypeButtons").children);
+
+    // ============== Add Interaction or Debug Logging ==============
+    // Example: Add click listeners to the muteColumn
+    deluge.muteColumn.forEach((pad, index) => {
+        pad.addEventListener("click", () => {
+            console.log(`Mute pad ${index + 1} clicked.`);
+            // Add additional functionality here
+        });
     });
 
-    delugeSvgDoc.querySelector("#clipButton").addEventListener("click", () => {
-        updateContext("clip");
+    // Example: Add click listeners to the auditionColumn
+    deluge.auditionColumn.forEach((pad, index) => {
+        pad.addEventListener("click", () => {
+            console.log(`Audition pad ${index + 1} clicked.`);
+            // Add additional functionality here
+        });
     });
+
+    // Example: Add click listeners to performanceButtons
+    deluge.performanceButtons.forEach((button, index) => {
+        button.addEventListener("click", () => {
+            console.log(`Performance button ${index + 1} clicked.`);
+            // Add additional functionality here
+        });
+    });
+
+    // Example: Add click listeners to clipTypeButtons
+    deluge.clipTypeButtons.forEach((button, index) => {
+        button.addEventListener("click", () => {
+            console.log(`Clip type button ${index + 1} clicked.`);
+            // Add additional functionality here
+        });
+    });
+
+    console.log("SVG controls initialized:", deluge);
 }
+
 
 // deluge.mainGrid.addEventListener('click', function(event){
 //     lg(event.target)
@@ -100,6 +146,26 @@ function initializeSVGControls() {
 // =====================
 
 function updateContext(newContext, subView = null) {
+    if (newContext === "song") {
+        if (contextManager.currentContext === "clip") {
+            // Switch back to the last song-related mode
+            newContext = contextManager.lastSongMode;
+        } else if (contextManager.currentContext === "song") {
+            // Toggle between song and arranger modes
+            newContext = "arranger";
+        } else if (contextManager.currentContext === "arranger") {
+            // Toggle back to song mode
+            newContext = "song";
+        }
+    }
+
+    if (newContext === "clip") {
+        // Save the current mode (song or arranger) before switching to clip
+        if (contextManager.currentContext === "song" || contextManager.currentContext === "arranger") {
+            contextManager.lastSongMode = contextManager.currentContext;
+        }
+    }
+
     if (contextManager.views[newContext]) {
         contextManager.currentContext = newContext;
 
@@ -109,17 +175,54 @@ function updateContext(newContext, subView = null) {
             contextManager.displayMode = contextManager.views[newContext][0];
         }
 
-        console.log(`Context: ${newContext}, View: ${contextManager.displayMode}`);
+        console.log(`Context: ${contextManager.currentContext}, View: ${contextManager.displayMode}`);
         updateUI();
     } else {
         console.warn(`Invalid context: ${newContext}`);
     }
 }
 
+
+
+// Store the blinking interval for arranger mode
+let arrangerBlinkInterval;
+
 function updateUI() {
-    document.getElementById("contextDisplay").innerText =
-        `Mode: ${contextManager.currentContext}, View: ${contextManager.displayMode}`;
+    const display = document.getElementById("contextDisplay");
+    if (display) {
+        display.innerText = `Mode: ${contextManager.currentContext}, View: ${contextManager.displayMode}`;
+    }
+
+    // Reset all mode buttons to their default color
+    recolorButton(deluge.songButton, "#959595");
+    recolorButton(deluge.clipButton, "#959595");
+
+    // Clear any previous blinking interval for arranger mode
+    if (arrangerBlinkInterval) {
+        clearInterval(arrangerBlinkInterval);
+        arrangerBlinkInterval = null;
+    }
+
+    // Highlight the active mode button
+    switch (contextManager.currentContext) {
+        case "song":
+            recolorButton(deluge.songButton, "#00bbff");
+            break;
+        case "clip":
+            recolorButton(deluge.clipButton, "#00bbff");
+            break;
+        case "arranger":
+            // Blink between two colors for arranger mode
+            let isBlue = false;
+            arrangerBlinkInterval = setInterval(() => {
+                isBlue = !isBlue;
+                recolorButton(deluge.songButton, isBlue ? "#00bbff" : "#959595");
+            }, 500); // Blink every 500ms
+            break;
+    }
 }
+
+
 
 var presetDiv = document.getElementById('preset-div');
     presetDiv.addEventListener('click', function(event){
@@ -248,6 +351,14 @@ function setRandomColor(target) {
     // var randomColor = '#' + Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0');
     const randomColor = getRandomColor();
     target.style.fill = randomColor;  // Use style.fill instead of setAttribute
+}
+
+function recolorButton(button, color) {
+    if (button && button.children[0]) {
+        button.children[0].style.fill = color;
+    } else {
+        console.warn("Invalid button or button structure:", button);
+    }
 }
 
 
