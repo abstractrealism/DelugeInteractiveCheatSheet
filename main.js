@@ -68,8 +68,16 @@ function initializeSVGControls() {
     deluge.songButton = delugeSvgDoc.querySelector("#songButton");
     deluge.clipButton = delugeSvgDoc.querySelector("#clipButton");
 
-    // Add listeners to these buttons
-    deluge.songButton.addEventListener("click", () => updateContext("song"));
+    // Add listeners to Song and Clip buttons
+    deluge.songButton.addEventListener("click", () => {
+        if (contextManager.displayMode === "performance") {
+            // Do nothing if in performance view
+            return;
+        }
+    
+        updateContext("song");
+    });
+    
     deluge.clipButton.addEventListener("click", () => {
         if (contextManager.currentContext === "clip") {
             updateContext("clip", "automation");
@@ -121,12 +129,30 @@ function initializeSVGControls() {
     });
     
     deluge.topButtons.keyboard.addEventListener("click", () => {
-        if (contextManager.currentContext === "arranger" || contextManager.currentContext === "song") {
-            // Open performance view
-            updateContext(contextManager.currentContext, "performance");
+        if (contextManager.currentContext === "arranger") {
+            if (contextManager.displayMode === "performance") {
+                // Exit performance view to default view
+                updateContext("arranger", "default");
+            } else {
+                // Enter performance view
+                updateContext("arranger", "performance");
+            }
+        } else if (contextManager.currentContext === "song") {
+            if (contextManager.displayMode === "performance") {
+                // Exit performance view to rows
+                updateContext("song", "rows");
+            } else {
+                // Enter performance view
+                updateContext("song", "performance");
+            }
         } else if (contextManager.currentContext === "clip") {
-            // Toggle to keyboard view
-            updateContext("clip", "keyboard");
+            if (contextManager.displayMode === "keyboard") {
+                // Exit keyboard view to last non-keyboard view
+                updateContext("clip", contextManager.lastNonKeyboardView);
+            } else {
+                // Enter keyboard view
+                updateContext("clip", "keyboard");
+            }
         }
     });
 
@@ -179,9 +205,10 @@ function updateContext(newContext, subView = null) {
         if (contextManager.currentContext === "clip") {
             newContext = contextManager.lastSongMode;
         } else if (contextManager.currentContext === "song") {
-            if (contextManager.displayMode === "performance") return;
+            if (contextManager.displayMode === "performance") return; // Do nothing in performance
             newContext = "arranger";
         } else if (contextManager.currentContext === "arranger") {
+            if (contextManager.displayMode === "performance") return; // Do nothing in performance
             newContext = "song";
         }
     }
@@ -249,35 +276,42 @@ function updateUI() {
         case "song":
             recolorButton(deluge.songButton, "#00bbff"); // Song button stays lit
             if (contextManager.displayMode === "performance") {
-                recolorButton(deluge.topButtons.keyboard, "#00bbff"); // Keyboard button lit in performance
+                recolorButton(deluge.topButtons.keyboard, "#00bbff");
             }
             break;
 
         case "arranger":
             if (contextManager.displayMode === "performance") {
-                recolorButton(deluge.topButtons.keyboard, "#00bbff"); // Keyboard button lit in performance
+                recolorButton(deluge.topButtons.keyboard, "#00bbff");
+            } else {
+                let isSongBlue = false;
+                arrangerBlinkInterval = setInterval(() => {
+                    isSongBlue = !isSongBlue;
+                    recolorButton(deluge.songButton, isSongBlue ? "#00bbff" : "#959595");
+                }, 500);
             }
-            // Blink the song button
-            let isSongBlue = false;
-            arrangerBlinkInterval = setInterval(() => {
-                isSongBlue = !isSongBlue;
-                recolorButton(deluge.songButton, isSongBlue ? "#00bbff" : "#959595");
-            }, 500);
             break;
 
         case "clip":
             if (contextManager.displayMode === "keyboard") {
-                recolorButton(deluge.topButtons.keyboard, "#00bbff"); // Keyboard button lit in keyboard view
-            }
-            if (contextManager.displayMode === "automation") {
-                // Blink the clip button in automation view
+                recolorButton(deluge.topButtons.keyboard, "#00bbff");
+                if (contextManager.lastNonKeyboardView === "automation") {
+                    // Keep clip button blinking if last view was automation
+                    let isClipBlue = false;
+                    clipBlinkInterval = setInterval(() => {
+                        isClipBlue = !isClipBlue;
+                        recolorButton(deluge.clipButton, isClipBlue ? "#00bbff" : "#959595");
+                    }, 500);
+                } else {
+                    recolorButton(deluge.clipButton, "#00bbff");
+                }
+            } else if (contextManager.displayMode === "automation") {
                 let isClipBlue = false;
                 clipBlinkInterval = setInterval(() => {
                     isClipBlue = !isClipBlue;
                     recolorButton(deluge.clipButton, isClipBlue ? "#00bbff" : "#959595");
                 }, 500);
             } else {
-                // Clip button lit in default or keyboard view
                 recolorButton(deluge.clipButton, "#00bbff");
             }
             break;
