@@ -9,6 +9,7 @@ const contextManager = {
     displayMode: "rows", // Default view for song mode
     lastSongMode: "song", // Tracks the last song-related mode
     lastClipSubView: "default", // Tracks last clip sub-view
+    lastNonKeyboardView: "default", // Tracks the last non-keyboard clip view
     clipBlinking: false, // Flag for clip button blinking
 
     views: {
@@ -187,13 +188,16 @@ function updateContext(newContext, subView = null) {
 
     if (newContext === "clip") {
         if (subView === "keyboard") {
-            // Explicitly prioritize keyboard view
-            contextManager.displayMode = "keyboard";
-        } else if (contextManager.currentContext === "clip") {
             if (contextManager.displayMode === "keyboard") {
-                // If already in keyboard, do nothing
-                return;
-            } else if (contextManager.displayMode === "automation") {
+                // Return to last non-keyboard view
+                subView = contextManager.lastNonKeyboardView;
+            } else {
+                // Save the last non-keyboard view
+                contextManager.lastNonKeyboardView = contextManager.displayMode;
+                subView = "keyboard";
+            }
+        } else if (contextManager.currentContext === "clip") {
+            if (contextManager.displayMode === "automation") {
                 subView = "default"; // Toggle back to default
                 contextManager.clipBlinking = false;
             } else {
@@ -201,7 +205,6 @@ function updateContext(newContext, subView = null) {
                 contextManager.clipBlinking = true;
             }
         } else {
-            // Save the last clip sub-view
             contextManager.lastClipSubView = subView || "default";
             contextManager.clipBlinking = false;
         }
