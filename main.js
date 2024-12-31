@@ -73,7 +73,9 @@ function initializeSVGControls() {
     deluge.songButton.addEventListener("click", () => {
         if (contextManager.currentContext === "clip") {
             // Return to the last song-related mode
+            contextManager.lastClipSubView = contextManager.displayMode;
             updateContext(contextManager.lastSongMode);
+            
         } else if (contextManager.currentContext === "song") {
             if (contextManager.displayMode === "performance") {
                 // Do nothing in performance view
@@ -95,7 +97,9 @@ function initializeSVGControls() {
     deluge.clipButton.addEventListener("click", () => {
         if (contextManager.currentContext === "clip") {
             if (contextManager.displayMode === "keyboard") {
-                updateContext("clip", contextManager.lastNonKeyboardView);
+                contextManager.lastNonKeyboardView === "default" ? contextManager.lastNonKeyboardView = "automation" : contextManager.lastNonKeyboardView = "default"
+                // updateContext("clip", contextManager.lastNonKeyboardView);
+                updateUI();
             } else if (contextManager.displayMode === "automation") {
                 contextManager.clipBlinking = false;
                 updateContext("clip", "default");
@@ -106,11 +110,8 @@ function initializeSVGControls() {
         } else {
             // Re-open the last clip sub-view
             lg(contextManager.lastClipSubView)
-            if (contextManager.lastClipSubView === "keyboard") {
-                updateContext("clip", "keyboard");
-            } else {
-                updateContext("clip", contextManager.lastClipSubView || "default");
-            }
+            updateContext("clip", contextManager.lastClipSubView);
+            
         }
     });
     // ============== Mute and Audition Columns ==============
@@ -231,6 +232,7 @@ let clipBlinkInterval;
 
 function updateContext(newContext, subView = null) {
     if (contextManager.views[newContext]) {
+
         contextManager.currentContext = newContext;
 
         if (subView && contextManager.isValidView(newContext, subView)) {
