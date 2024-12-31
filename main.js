@@ -69,6 +69,7 @@ function initializeSVGControls() {
     deluge.clipButton = delugeSvgDoc.querySelector("#clipButton");
 
     // Add listeners to Song and Clip buttons
+        ////SONG BUTTON!//////
     deluge.songButton.addEventListener("click", () => {
         if (contextManager.currentContext === "clip") {
             // Return to the last song-related mode
@@ -90,23 +91,26 @@ function initializeSVGControls() {
         }
     });
     
+    ////CLIP BUTTON!//////
     deluge.clipButton.addEventListener("click", () => {
         if (contextManager.currentContext === "clip") {
             if (contextManager.displayMode === "keyboard") {
-                // Stay in keyboard view, no toggling
-                return;
+                updateContext("clip", contextManager.lastNonKeyboardView);
             } else if (contextManager.displayMode === "automation") {
-                // Exit automation view to default
                 contextManager.clipBlinking = false;
                 updateContext("clip", "default");
             } else {
-                // Enter automation view
                 contextManager.clipBlinking = true;
                 updateContext("clip", "automation");
             }
         } else {
-            // Enter clip mode
-            updateContext("clip");
+            // Re-open the last clip sub-view
+            lg(contextManager.lastClipSubView)
+            if (contextManager.lastClipSubView === "keyboard") {
+                updateContext("clip", "keyboard");
+            } else {
+                updateContext("clip", contextManager.lastClipSubView || "default");
+            }
         }
     });
     // ============== Mute and Audition Columns ==============
@@ -271,14 +275,14 @@ function updateUI() {
 
         case "arranger":
             if (contextManager.displayMode === "performance") {
-                recolorButton(deluge.topButtons.keyboard, "#00bbff");
-            } else {
-                let isSongBlue = false;
-                arrangerBlinkInterval = setInterval(() => {
-                    isSongBlue = !isSongBlue;
-                    recolorButton(deluge.songButton, isSongBlue ? "#00bbff" : "#959595");
-                }, 500);
+                recolorButton(deluge.topButtons.keyboard, "#00bbff"); // Keyboard button lit in performance
             }
+            // Always blink the song button in arranger mode
+            let isSongBlue = false;
+            arrangerBlinkInterval = setInterval(() => {
+                isSongBlue = !isSongBlue;
+                recolorButton(deluge.songButton, isSongBlue ? "#00bbff" : "#959595");
+            }, 500);
             break;
 
         case "clip":
