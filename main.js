@@ -208,7 +208,36 @@ function initializeSVGControls() {
         deluge.allButtons.push(button);
         button.addEventListener("click", () => {
             console.log(`Clip type button ${index + 1} clicked.`);
+            console.log("Is this thing on?")
             // Add additional functionality here
+            if (contextManager.currentContext == "clip") {
+                
+                switch (index) {
+                    case 0:
+                        contextManager.activeClip.cliptype = "synth";
+                        updateUI();
+                        break;
+                        
+                        case 1:
+                        contextManager.activeClip.cliptype = "kit";
+                        updateUI();
+                        break;
+                
+                    case 2:
+                        contextManager.activeClip.cliptype = "midi";
+                        updateUI();
+                        break;
+                
+                    case 3:
+                        contextManager.activeClip.cliptype = "cv";
+                        updateUI();
+                        break;
+                
+                    default:
+                        console.log("here")
+                        break;
+                }
+            }
         });
     });
     
