@@ -227,6 +227,26 @@ function initializeSVGControls() {
         pad.addEventListener("click", () => {
             console.log(`Audition pad ${index + 1} clicked.`);
             // Add additional functionality here
+            switch (contextManager.currentContext) {
+                case "song":
+                    if (deluge.mainGrid[`row${index}`].clip) {
+                        changeSectionColor(deluge.mainGrid[`row${index}`].clip);
+                        updateUI();
+                        
+                    }
+                    break;
+            
+                case "arranger":
+                    
+                    break;
+            
+                case "clip":
+                    
+                    break;
+            
+                default:
+                    break;
+            }
         });
     });
 
