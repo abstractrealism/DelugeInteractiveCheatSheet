@@ -74,6 +74,7 @@ Clip.prototype.setSection = function(section) {
 const validSections = ["blue", "magenta", "yellow", "red"];
 
 // Global variable to track the highest section color currently in use
+//TD: This doesn't currently work, as a clip uses itself as a baseline. Need for loop to check at time of change, I think. 
 let highestUsedSectionIndex = 0;
 
 
@@ -230,6 +231,7 @@ function initializeSVGControls() {
             switch (contextManager.currentContext) {
                 case "song":
                     if (deluge.mainGrid[`row${index}`].clip) {
+                        //TD: I think I need a for loop here to check at click time what's the highest used section
                         changeSectionColor(deluge.mainGrid[`row${index}`].clip);
                         updateUI();
                         
