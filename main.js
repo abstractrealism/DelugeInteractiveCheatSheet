@@ -3,6 +3,14 @@
 // =====================
 var lg = (msg) => console.log(msg);
 
+//actually, should have a similar global constant to the context manager that's for the song project file. contextmanager should stay just about views / context
+const projectFile = {
+    scale: "major",
+    rootNote: "C-2",
+    projectClips: [],
+};
+
+
 
 const contextManager = {
     currentContext: "song",
@@ -12,8 +20,6 @@ const contextManager = {
     lastNonKeyboardView: "default", // Tracks the last non-keyboard clip view
     clipBlinking: false, // Flag for clip button blinking
     songAffectEntire: false, //is song mode in Affect Entire
-    scale: "major",
-    rootNote: "C-2",
 
     views: {
         song: ["rows", "grid", "performance"],
@@ -24,11 +30,7 @@ const contextManager = {
     isValidView(context, subView) {
         return this.views[context] && this.views[context].includes(subView);
     },
-    activeClip: {
-        cliptype: "synth", //other options, kit, midi, cv, audio. not sure I need the same functionality as above for views
-        scaleMode: true,
-        activePerformanceButton: 1, 
-    }
+    activeClip: null,
 };
 
 var presets = {};
@@ -42,10 +44,43 @@ deluge.allButtons = [];
 // Initialization
 // =====================
 
+// Define the constructor for Clips
+function Clip(clipType, section, scaleMode) {
+    this.clipType = clipType;
+    this.bars = 1;
+    this.scaleMode = scaleMode;
+    this.activePerformanceButton = 1;
+    this.notes = []; // You can add notes later if needed
+    this.setSection(section);
+
+}
+// Setter method to validate the section
+Clip.prototype.setSection = function(section) {
+    const sectionIndex = validSections.indexOf(section);
+    if (sectionIndex === -1 || sectionIndex > highestUsedSectionIndex + 1) {
+        throw new Error(
+            `Invalid section: ${section}. You can only set sections up to ${validSections[highestUsedSectionIndex + 1]}.`
+        );
+    }
+    this.section = section;
+
+    // Update the highest used section index if necessary
+    if (sectionIndex > highestUsedSectionIndex) {
+        highestUsedSectionIndex = sectionIndex;
+    }
+};
+
+// Declare the validSections array globally
+const validSections = ["blue", "magenta", "yellow", "red"];
+
+// Global variable to track the highest section color currently in use
+let highestUsedSectionIndex = 0;
+
+
 const testButton = document.getElementById("testButton");
 testButton.addEventListener('click', testing);
 
-
+//this could just go in SVGControls?
 function initializeGrid() {
     const delugeSvgDoc = document.querySelector("#delugeSVG").contentDocument;
 
@@ -58,6 +93,7 @@ function initializeGrid() {
             deluge.mainGrid[`row${x}`][`pad${y}`] = deluge.mainGrid[`row${x}`].children[y].children[0];
             deluge.mainGridPads.push(deluge.mainGrid[`row${x}`][`pad${y}`]);
         }
+        deluge.mainGrid[`row${x}`].clip = false;
     }
 }
 
@@ -240,11 +276,25 @@ function initializeSVGControls() {
             }
         });
     });
+
+
+    //add clips to song mode
+    //initial clip
+    // deluge.mainGrid.row7.clip = true;
     
 
 
     deluge.allButtons.push(...deluge.mainGridPads);
     console.log("SVG controls initialized:", deluge);
+    // console.log(deluge.mainGrid.children.length)
+};
+
+function initializeSongProject() {
+    // Example of creating a new Clip object
+    const clip0 = new Clip("synth", "blue", true);
+    projectFile.projectClips.push(clip0);
+    deluge.mainGrid.row7.clip = clip0;
+    
 }
 
 
@@ -337,6 +387,19 @@ function updateUI() {
             //affect entire
             if (contextManager.songAffectEntire == true) {
                 recolorButton(deluge.topButtons.affectEntire, "#ff6700")
+            }
+
+            //start adding clips
+            for (var x = 0; x < 8; x++) {
+                if(deluge.mainGrid[`row${x}`].clip){
+                    //need to improve the color accuracy of these hex codes
+                    //also add other section colors. probably store all section colors in an array to simplify switching through them
+                    //add a "highestUsedSectionColor" to the context manager since it's not as simple as looping through all of them
+                    //actually, should have a similar global constant to the context manager that's for the song project file. contextmanager should stay just about views / context
+                    recolorButton(deluge.muteColumn[x], "#00ff00");
+                    recolorButton(deluge.auditionColumn[x], deluge.mainGrid[`row${x}`].clip.section);
+
+                }
             }
 
             //end song
@@ -519,6 +582,25 @@ TBD
 */
 
 // =====================
+// Song Functions
+// =====================
+
+// Function to cycle the section color to the next one
+function changeSectionColor(clip) {
+    const currentIndex = validSections.indexOf(clip.section);
+    let nextIndex = (currentIndex + 1) % validSections.length;
+
+    // Ensure the next section is within the allowed range
+    if (nextIndex > highestUsedSectionIndex + 1) {
+        nextIndex = 0; // Loop back to the start if we've reached the limit
+    }
+
+    // Set the new section
+    clip.setSection(validSections[nextIndex]);
+    console.log(`Section changed to: ${clip.section}`);
+}
+
+// =====================
 // Utility Functions
 // =====================
 
@@ -598,5 +680,6 @@ function applyPreset(targetID) {
 window.addEventListener("load", function () {
     initializeGrid();
     initializeSVGControls();
+    initializeSongProject();
     updateUI();
 });//end on load
