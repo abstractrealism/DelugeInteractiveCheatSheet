@@ -45,6 +45,11 @@ deluge.allButtons = [];
 // =====================
 
 // Define the constructor for Clips
+//TD: A bunch of things from the contextManager need to be moved into the clip object, since each clip will remember independently what its last view was. 
+//These two at least:
+// lastClipSubView: "default", // Tracks last clip sub-view
+// lastNonKeyboardView: "default", // Tracks the last non-keyboard clip view
+//I think many of the places that currently check, say, contextManager.lastNonKeyboardView can just check contextManager.activeClip.lastNonKBV etc
 function Clip(clipType, section, scaleMode) {
     this.clipType = clipType;
     this.bars = 1;
@@ -52,6 +57,7 @@ function Clip(clipType, section, scaleMode) {
     this.activePerformanceButton = 1;
     this.notes = []; // You can add notes later if needed
     this.setSection(section);
+    this.mutedRows = [];
 
 }
 // Setter method to validate the section
@@ -219,6 +225,28 @@ function initializeSVGControls() {
         pad.addEventListener("click", () => {
             console.log(`Mute pad ${index + 1} clicked.`);
             // Add additional functionality here
+            switch (contextManager.currentContext) {
+                case "song":
+                    
+                    break;
+                case "arranger":
+                
+                break;
+            
+                case "clip":
+                    let isMutedIdx = contextManager.activeClip.mutedRows.indexOf(index);
+                    if (isMutedIdx == -1) {
+                        contextManager.activeClip.mutedRows.push(index);
+                        
+                    } else {
+                        contextManager.activeClip.mutedRows.splice(isMutedIdx,1)
+                    }
+                    updateUI();
+                    break;
+            
+                default:
+                    break;
+            }
         });
     });
 
@@ -316,6 +344,7 @@ function initializeSongProject() {
     const clip0 = new Clip("synth", "blue", true);
     projectFile.projectClips.push(clip0);
     deluge.mainGrid.row7.clip = clip0;
+    contextManager.activeClip = clip0;
     
 }
 
@@ -467,7 +496,19 @@ function updateUI() {
                     recolorButton(deluge.clipButton, isClipBlue ? "#007cff" : "#959595");
                 }, 500);
             } else {
+                //default notes view
                 recolorButton(deluge.clipButton, "#007cff");
+
+                //add mute column
+                deluge.muteColumn.forEach((button, index) => {
+                    if (contextManager.activeClip.mutedRows.includes(index)) {
+                        // Set muted row color to yellow
+                        recolorButton(button,"yellow");
+                    } else {
+                        // Set default color to green
+                        recolorButton(button,"green");
+                    }
+                });
             }
 
             //affect entire
