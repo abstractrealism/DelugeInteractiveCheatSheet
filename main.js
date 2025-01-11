@@ -209,7 +209,7 @@ function initializeSVGControls() {
             //toggle affect entire button for song modes
             contextManager.songAffectEntire = !contextManager.songAffectEntire;
             updateUI();
-        } else if (false && contextManager.currentContext === "clip" && cliptype === "kit") {
+        } else if (false && contextManager.currentContext === "clip" && clipType === "kit") {
             //TD: remove the false once kit clips are implemented
             //kit.affectEntire = false or somethinglike that
         }
@@ -302,28 +302,27 @@ function initializeSVGControls() {
         deluge.allButtons.push(button);
         button.addEventListener("click", () => {
             console.log(`Clip type button ${index + 1} clicked.`);
-            console.log("Is this thing on?")
             // Add additional functionality here
             if (contextManager.currentContext == "clip") {
                 
                 switch (index) {
                     case 0:
-                        contextManager.activeClip.cliptype = "synth";
+                        contextManager.activeClip.clipType = "synth";
                         updateUI();
                         break;
                         
                         case 1:
-                        contextManager.activeClip.cliptype = "kit";
+                        contextManager.activeClip.clipType = "kit";
                         updateUI();
                         break;
                 
                     case 2:
-                        contextManager.activeClip.cliptype = "midi";
+                        contextManager.activeClip.clipType = "midi";
                         updateUI();
                         break;
                 
                     case 3:
-                        contextManager.activeClip.cliptype = "cv";
+                        contextManager.activeClip.clipType = "cv";
                         updateUI();
                         break;
                 
@@ -519,7 +518,7 @@ function updateUI() {
 
             //affect entire
             //TD: remove "true" once the logic actually is present
-            if (true || contextManager.activeClip.cliptype == "synth" || contextManager.activeClip.affectEntire == true) {
+            if (true || contextManager.activeClip.clipType == "synth" || contextManager.activeClip.affectEntire == true) {
                 recolorButton(deluge.topButtons.affectEntire, "#ff6700")
             }
 
@@ -546,7 +545,7 @@ function updateUI() {
                     break;
             
                 default:
-                    console.log("in cliptype default " + contextManager.activeClip.clipType)
+                    console.log("in clipType default " + contextManager.activeClip.clipType)
                     break;
             }
             //end clip
