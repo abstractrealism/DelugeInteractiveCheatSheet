@@ -55,9 +55,17 @@ function Clip(clipType, section, scaleMode) {
     this.bars = 1;
     this.scaleMode = scaleMode;
     this.activePerformanceButton = 1;
-    this.notes = []; // You can add notes later if needed
+    this.notes = {};
     this.setSection(section);
     this.mutedRows = [];
+    this.preset = "";
+    if (this.clipType == "synth") {
+        this.affectEntire = true;
+    } else {
+        //TD: check if Midi + CV have affect entire and what is default
+        this.affectEntire = false;
+        
+    }
 
 }
 // Setter method to validate the section
@@ -418,9 +426,6 @@ function updateUI() {
     }
 
     // Reset all buttons to their default color
-    // recolorButton(deluge.songButton, "#959595");
-    // recolorButton(deluge.clipButton, "#959595");
-    // recolorButton(deluge.topButtons.keyboard, "#959595");
     for (var z = 0; z < deluge.allButtons.length; z++) {
         recolorButton(deluge.allButtons[z], "#959595")
     }
@@ -443,6 +448,7 @@ function updateUI() {
             //start adding clips
             for (var x = 0; x < 8; x++) {
                 if(deluge.mainGrid[`row${x}`].clip){
+                    //TD:
                     //need to improve the color accuracy of these hex codes
                     //also add other section colors. probably store all section colors in an array to simplify switching through them
                     //add a "highestUsedSectionColor" to the context manager since it's not as simple as looping through all of them
@@ -513,12 +519,12 @@ function updateUI() {
 
             //affect entire
             //TD: remove "true" once the logic actually is present
-            if (true || cliptype == "synth" || clip.affectEntire == true) {
+            if (true || contextManager.activeClip.cliptype == "synth" || contextManager.activeClip.affectEntire == true) {
                 recolorButton(deluge.topButtons.affectEntire, "#ff6700")
             }
 
             //clip type
-            switch (contextManager.activeClip.cliptype) {
+            switch (contextManager.activeClip.clipType.toString()) {
                 case "synth":
                     recolorButton(deluge.clipTypeButtons[0], "#ff1100")
                     break;
@@ -540,6 +546,7 @@ function updateUI() {
                     break;
             
                 default:
+                    console.log("in cliptype default " + contextManager.activeClip.clipType)
                     break;
             }
             //end clip
