@@ -733,7 +733,7 @@ function isomorphicKeyboard() {
     for (var row = 0; row < 8; row++) {
         for (var col = 0; col < 16; col++) {
             //reset values
-            lightness = 50;
+            lightness = 58.4;
             saturation = 60;
             // Calculate the note index with the row isomorphicOffset
             const noteIndex = (col + rootNote + horzOffset + vertOffset + row * Math.abs(isomorphicOffset)) % 12;
@@ -746,7 +746,7 @@ function isomorphicKeyboard() {
             // Set color based on whether the note is in the scale
             saturation = isInScale ? 60 : 0;
             if (isRoot) {
-                lightness = 55;
+                lightness = 62;
                 saturation = 100;
             }
             //TD: note index should work with scroll due to vertOffset. Need to figure out where to add that here. 
