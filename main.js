@@ -3,9 +3,39 @@
 // =====================
 var lg = (msg) => console.log(msg);
 
+
+// Example scales with offsets
+const scales = {
+    major: [0, 2, 4, 5, 7, 9, 11],
+    minor: [0, 2, 3, 5, 7, 8, 10],
+
+    // Western Modes
+    // ionian: [0, 2, 4, 5, 7, 9, 11],        // Major scale
+    dorian: [0, 2, 3, 5, 7, 9, 10],
+    phrygian: [0, 1, 3, 5, 7, 8, 10],
+    lydian: [0, 2, 4, 6, 7, 9, 11],
+    mixolydian: [0, 2, 4, 5, 7, 9, 10],
+    // aeolian: [0, 2, 3, 5, 7, 8, 10],       // Natural minor
+    locrian: [0, 1, 3, 5, 6, 8, 10],
+
+    // Minor Scales
+    melodicMinor: [0, 2, 3, 5, 7, 9, 11],
+    harmonicMinor: [0, 2, 3, 5, 7, 8, 11],
+    hungarianMinor: [0, 2, 3, 6, 7, 8, 11],
+
+    // Other Scales
+    marva: [0, 1, 4, 6, 7, 8, 11],
+    arabian: [0, 2, 4, 5, 6, 8, 10],
+    wholeTone: [0, 2, 4, 6, 8, 10],
+    blues: [0, 3, 5, 6, 7, 10],
+    pentatonicMinor: [0, 3, 5, 7, 10],
+    hirajoshi: [0, 2, 3, 7, 8],
+
+};
+
 //actually, should have a similar global constant to the context manager that's for the song project file. contextmanager should stay just about views / context
 const projectFile = {
-    scale: "major",
+    scale: scales.major,
     rootNote: "C-2",
     projectClips: [],
 };
@@ -66,6 +96,7 @@ function Clip(clipType, section, scaleMode) {
         this.affectEntire = false;
         
     }
+    this.randomColorOffset = Math.floor(Math.random() * 24)*15;
 
 }
 // Setter method to validate the section
@@ -215,6 +246,14 @@ function initializeSVGControls() {
         }
     });
 
+    /// ====== SCALE BUTTON =========
+    deluge.allButtons.push(deluge.topButtons.scaleButton = delugeSvgDoc.querySelector("#scale"));
+    deluge.topButtons.scaleButton.addEventListener("click", () => {
+        if (contextManager.currentContext === "clip" && ["synth","midi","cv"].includes(contextManager.activeClip.clipType)) {
+            contextManager.activeClip.scaleMode = !contextManager.activeClip.scaleMode;
+            updateUI();
+        }
+    });
 
     // ============== Mute and Audition Columns ==============
     deluge.muteColumn = Array.from(delugeSvgDoc.querySelector("#muteColumn").children);
@@ -349,6 +388,7 @@ function initializeSVGControls() {
 function initializeSongProject() {
     // Example of creating a new Clip object
     const clip0 = new Clip("synth", "blue", true);
+    clip0.randomColorOffset = 0;
     projectFile.projectClips.push(clip0);
     deluge.mainGrid.row7.clip = clip0;
     contextManager.activeClip = clip0;
@@ -483,6 +523,12 @@ function updateUI() {
         case "clip":
             //modes and views
             if (contextManager.displayMode === "keyboard") {
+                if (["synth","midi","cv"].includes(contextManager.activeClip.clipType)) {
+                    isomorphicKeyboard();
+                    
+                } else if(contextManager.activeClip.clipType == "kit") {
+                    //
+                }
                 recolorButton(deluge.topButtons.keyboard, "#007cff");
                 if (contextManager.lastNonKeyboardView === "automation") {
                     // Keep clip button blinking if last view was automation
@@ -516,6 +562,11 @@ function updateUI() {
                 });
             }
 
+            //scale button
+            if (contextManager.activeClip.scaleMode && ["synth","midi","cv"].includes(contextManager.activeClip.clipType)) {
+                recolorButton(deluge.topButtons.scaleButton, "#007cff");
+
+            }
             //affect entire
             //TD: remove "true" once the logic actually is present
             if (true || contextManager.activeClip.clipType == "synth" || contextManager.activeClip.affectEntire == true) {
@@ -561,12 +612,6 @@ var presetDiv = document.getElementById('preset-div');
 });
 
 function testing() {
-    for (var x = 0; x < 8; x++) {
-        for (var y = 0; y < 16; y++) {
-            deluge.mainGrid["row"+x]['pad'+y].style.fill = "#"+y.toString(16)+y.toString(16)+y.toString(16)
-            
-        }
-    }
 
     //randomize main grid
     // for (var x = 0; x < deluge.mainGridPads.length; x++) {
@@ -574,7 +619,6 @@ function testing() {
     // }
 
 }
-
 
 /*
 
@@ -670,12 +714,100 @@ function changeSectionColor(clip) {
 }
 
 // =====================
+// UI Functions
+// =====================
+
+function isomorphicKeyboard() {
+    var startingPoint = 50;
+    var isomorphicOffset = -5;
+    var horzOffset = 2 //This is because by default the bottom leftmost pad is D2
+    var vertOffset = 0; //for scrolling vertically
+    var lightness;
+    var saturation;
+
+    // Get the active scale and root note from the clip
+    const activeScale = projectFile.scale;
+    const rootNote =  0;
+    // const rootNote = activeClip.rootNote || 0;
+
+    for (var row = 0; row < 8; row++) {
+        for (var col = 0; col < 16; col++) {
+            //reset values
+            lightness = 50;
+            saturation = 60;
+            // Calculate the note index with the row isomorphicOffset
+            const noteIndex = (col + rootNote + horzOffset + vertOffset + row * Math.abs(isomorphicOffset)) % 12;
+            // lg(`Row: ${row}. Col: ${col}. NoteIndex: ${noteIndex}`)
+
+            // Check if the note is in the active scale
+            const isInScale = contextManager.activeClip.scaleMode == true ? activeScale.includes(noteIndex) : false;
+            const isRoot = noteIndex == rootNote;
+
+            // Set color based on whether the note is in the scale
+            saturation = isInScale ? 60 : 0;
+            if (isRoot) {
+                lightness = 55;
+                saturation = 100;
+            }
+            //TD: note index should work with scroll due to vertOffset. Need to figure out where to add that here. 
+            // Also Horz offset too actually. It's sort of included with starting point, maybe should start from whatever the lowest note possible is and count up? 
+            deluge.mainGrid["row" + row]['pad' + col].style.fill = HSLToHex(startingPoint - (col * 5), saturation, lightness);
+        }
+        startingPoint += 5 * isomorphicOffset;
+    }
+}
+
+// =====================
 // Utility Functions
 // =====================
 
 function getRandomColor() {
     return '#' + Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0');
 }
+
+function HSLToHex(h,s,l) {
+    // Normalize hue to be within [0, 359] using a while loop
+    while (h < 0) h += 360;
+    while (h >= 360) h -= 360;
+
+    s /= 100;
+    l /= 100;
+  
+    let c = (1 - Math.abs(2 * l - 1)) * s,
+        x = c * (1 - Math.abs((h / 60) % 2 - 1)),
+        m = l - c/2,
+        r = 0,
+        g = 0, 
+        b = 0; 
+  
+    if (0 <= h && h < 60) {
+      r = c; g = x; b = 0;
+    } else if (60 <= h && h < 120) {
+      r = x; g = c; b = 0;
+    } else if (120 <= h && h < 180) {
+      r = 0; g = c; b = x;
+    } else if (180 <= h && h < 240) {
+      r = 0; g = x; b = c;
+    } else if (240 <= h && h < 300) {
+      r = x; g = 0; b = c;
+    } else if (300 <= h && h < 360) {
+      r = c; g = 0; b = x;
+    }
+    // Having obtained RGB, convert channels to hex
+    r = Math.round((r + m) * 255).toString(16);
+    g = Math.round((g + m) * 255).toString(16);
+    b = Math.round((b + m) * 255).toString(16);
+  
+    // Prepend 0s, if necessary
+    if (r.length == 1)
+      r = "0" + r;
+    if (g.length == 1)
+      g = "0" + g;
+    if (b.length == 1)
+      b = "0" + b;
+  
+    return "#" + r + g + b;
+  }
 
 //Need to test that this works and figure out how best to implement it, where to draw the info from, etc. 
 function showPopupNearPad(pad, message) {
