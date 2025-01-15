@@ -388,7 +388,7 @@ function initializeSVGControls() {
 function initializeSongProject() {
     // Example of creating a new Clip object
     const clip0 = new Clip("synth", "blue", true);
-    clip0.randomColorOffset = 0;
+    clip0.randomColorOffset = 300;
     projectFile.projectClips.push(clip0);
     deluge.mainGrid.row7.clip = clip0;
     contextManager.activeClip = clip0;
@@ -717,42 +717,57 @@ function changeSectionColor(clip) {
 // UI Functions
 // =====================
 
+function getNoteHue(noteNum) {
+    return contextManager.activeClip.randomColorOffset - (noteNum * 5);
+}
+
 function isomorphicKeyboard() {
-    var startingPoint = 50;
-    var isomorphicOffset = -5;
+    //starting point should be c-2
+    //find color of c-2 and calculate from there
+    //separate function that generates colors to use for root notes in non keyboard view
+    //should also separate out notes to a separate function so other things can access the inkey notes, roots, etc
+    var startingPoint = 300;//DONT USE THIS
+    var isomorphicOffset = 5;
     var horzOffset = 2 //This is because by default the bottom leftmost pad is D2
-    var vertOffset = 0; //for scrolling vertically
+    var vertOffset = 10; //for scrolling vertically
     var lightness;
     var saturation;
+    var noteNumber = vertOffset * isomorphicOffset;
 
     // Get the active scale and root note from the clip
     const activeScale = projectFile.scale;
     const rootNote =  0;
     // const rootNote = activeClip.rootNote || 0;
 
+    //scroll the grid
     for (var row = 0; row < 8; row++) {
         for (var col = 0; col < 16; col++) {
             //reset values
             lightness = 58.4;
             saturation = 60;
             // Calculate the note index with the row isomorphicOffset
-            const noteIndex = (col + rootNote + horzOffset + vertOffset + row * Math.abs(isomorphicOffset)) % 12;
-            // lg(`Row: ${row}. Col: ${col}. NoteIndex: ${noteIndex}`)
+            // const noteIndex = (col + rootNote + horzOffset + vertOffset + row * Math.abs(isomorphicOffset)) % 12;
+            const noteIndex = (noteNumber) % 12;
+            lg(`Row: ${row}. Col: ${col}. NoteNumber: ${noteNumber}`)
 
             // Check if the note is in the active scale
             const isInScale = contextManager.activeClip.scaleMode == true ? activeScale.includes(noteIndex) : false;
-            const isRoot = noteIndex == rootNote;
+            // const isRoot = noteIndex == rootNote;
 
             // Set color based on whether the note is in the scale
             saturation = isInScale ? 60 : 0;
-            if (isRoot) {
+            if (noteIndex == rootNote) {
+                //if is root note
                 lightness = 62;
                 saturation = 100;
             }
             //TD: note index should work with scroll due to vertOffset. Need to figure out where to add that here. 
             // Also Horz offset too actually. It's sort of included with starting point, maybe should start from whatever the lowest note possible is and count up? 
-            deluge.mainGrid["row" + row]['pad' + col].style.fill = HSLToHex(startingPoint - (col * 5), saturation, lightness);
+            // deluge.mainGrid["row" + row]['pad' + col].style.fill = HSLToHex(startingPoint - (col * 5), saturation, lightness);
+            deluge.mainGrid["row" + row]['pad' + col].style.fill = HSLToHex(getNoteHue(noteNumber), saturation, lightness);
+            noteNumber++;
         }
+        noteNumber-= (16-isomorphicOffset);
         startingPoint += 5 * isomorphicOffset;
     }
 }
