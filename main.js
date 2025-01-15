@@ -38,6 +38,7 @@ const projectFile = {
     scale: scales.major,
     rootNote: "C-2",
     projectClips: [],
+    activePerformanceButton: 1,
 };
 
 
@@ -333,6 +334,23 @@ function initializeSVGControls() {
         button.addEventListener("click", () => {
             console.log(`Performance button ${index + 1} clicked.`);
             // Add additional functionality here
+            switch (contextManager.currentContext) {
+                case "song":
+                    
+                    break;
+            
+                case "arranger":
+                    
+                    break;
+            
+                case "clip":
+                    contextManager.activeClip.activePerformanceButton = index;
+                    updateUI();
+                    break;
+            
+                default:
+                    break;
+            }
         });
     });
 
@@ -572,6 +590,9 @@ function updateUI() {
             if (true || contextManager.activeClip.clipType == "synth" || contextManager.activeClip.affectEntire == true) {
                 recolorButton(deluge.topButtons.affectEntire, "#ff6700")
             }
+
+            //performance buttons
+            recolorButton(deluge.performanceButtons[contextManager.activeClip.activePerformanceButton], "#ff6700")
 
             //clip type
             switch (contextManager.activeClip.clipType.toString()) {
