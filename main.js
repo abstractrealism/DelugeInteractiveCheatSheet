@@ -86,6 +86,8 @@ function Clip(clipType, section, scaleMode) {
     this.bars = 1;
     this.scaleMode = scaleMode;
     this.activePerformanceButton = 1;
+    this.topPerformanceValues = [1,0.8,0,0.5,0,0,0.5,0];
+    this.bottomPerformanceValues = [0.5,0,0,0,0,0,0,0];
     this.notes = {};
     this.setSection(section);
     this.mutedRows = [];
@@ -265,6 +267,10 @@ function initializeSVGControls() {
 
     // ============== Clip Type Buttons ==============
     deluge.clipTypeButtons = Array.from(delugeSvgDoc.querySelector("#clipTypeButtons").children);
+
+    // ============== Performance Indicator LEDs ==============
+    deluge.topPerfomanceIndicator = delugeSvgDoc.querySelector("#High_Gold_Indicator");
+    deluge.bottomPerfomanceIndicator = delugeSvgDoc.querySelector("#Low_Gold_Indicator");
 
     // ============== Add Interaction or Debug Logging ==============
     // Example: Add click listeners to the muteColumn
@@ -593,6 +599,8 @@ function updateUI() {
 
             //performance buttons
             recolorButton(deluge.performanceButtons[contextManager.activeClip.activePerformanceButton], "#ff6700")
+            recolorPerformanceIndicator(deluge.topPerfomanceIndicator, contextManager.activeClip.topPerformanceValues[contextManager.activeClip.activePerformanceButton])
+            recolorPerformanceIndicator(deluge.bottomPerfomanceIndicator, contextManager.activeClip.bottomPerformanceValues[contextManager.activeClip.activePerformanceButton])
 
             //clip type
             switch (contextManager.activeClip.clipType.toString()) {
@@ -643,51 +651,11 @@ function testing() {
 
 /*
 
-array per row
-array each for mutes and auditions
-array for gold knob parameter buttons
-array for clip mode buttons (synth, kit, etc)
-array of all other buttons
-all of the above in a larger array or object
-
-OR
-
-object with each button outside the grid, 
-then either coordinates per grid button or arrays per row
-
-/////
-
-Assuming object: deluge with properties like deluge.playButton
-Recolor function: 
-Func(button, preset){
- deluge[button].fill = preset[button];
-}
-
-Or
-
-For (let button in deluge) {
- deluge[button].fill = preset[button]
-}
-
-Actually the second one could be recolor all and use the first one. 
-Apply preset per button or to all. Recolor function same except second parameter is a color
-
-
-
 ## TO DO: 
-Confirm all elements are nested the same way so it's always namedID.children[0] that has the fill color? Easier to reconfigure svg if need be than to have a ton of validating in function probably 
----the grid are all g > rect. the round buttons are all g > g > rect. recolor function can test #namedID.children[0].tagName = "g" and if yes recurse one more level
-
-SVG size outlined text vs not
----much larger, but dealing with text too much of a nightmare
 
 Couple of starting preset buttons 
 
-OnClick for svg buttons (determine which, capture vs bubble etc)
-
 In SVG, will need classes as well as IDs so all clip rows can share a behavior, for instance 
-
-Need a way to keep track of state so when eventually buttons are interactive they correctly apply the correct preset based on current view and what was pressed, eg, pressing song from clip goes to song view, but from song view goes to arranger
 
 How to turn knobs? Click and drag? To push turn click then click drag?
 
@@ -797,9 +765,50 @@ function isomorphicKeyboard() {
 // Utility Functions
 // =====================
 
+function recolorPerformanceIndicator(indic, val) {
+    recolorButton(indic.children[0], hsbToHex(24, Math.min(100, Math.max(0 , (val - 0.75) * 400)), Math.min(100, 80 + Math.max(0 , (val - 0.75) * 500))))
+    recolorButton(indic.children[1], hsbToHex(24, Math.min(100, Math.max(0 , (val - 0.50) * 400)), Math.min(100, 80 + Math.max(0 , (val - 0.50) * 500))))
+    recolorButton(indic.children[2], hsbToHex(24, Math.min(100, Math.max(0 , (val - 0.25) * 400)), Math.min(100, 80 + Math.max(0 , (val - 0.25) * 500))))
+    recolorButton(indic.children[3], hsbToHex(24, Math.min(100, val * 400), Math.min(100, 80 + val * 500)))
+}
+
 function getRandomColor() {
     return '#' + Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0');
 }
+
+function rgbToHex(r, g, b) {
+    return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+}
+
+function hsbToHex(h, s, br) {
+    const [r, g, b] = hsbToRgb(h, s, br);
+    return rgbToHex(r, g, b);
+}
+    
+
+function hsbToRgb(h, s, br) {
+    s /= 100;
+    br /= 100;
+  
+    const i = Math.floor(h / 60);
+    const f = h / 60 - i;
+    const p = br * (1 - s);
+    const q = br * (1 - f * s);
+    const t = br * (1 - (1 - f) * s);
+  
+    let r, g, b;
+  
+    switch (i % 6) {
+      case 0: r = br, g = t, b = p; break;
+      case 1: r = q, g = br, b = p; break;
+      case 2: r = p, g = br, b = t; break;
+      case 3: r = p, g = q, b = br; break;
+      case 4: r = t, g = p, b = br; break;
+      case 5: r = br, g = p, b = q; break;
+    }
+  
+    return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
+  }
 
 function HSLToHex(h,s,l) {
     // Normalize hue to be within [0, 359] using a while loop
