@@ -46,7 +46,7 @@ const projectFile = {
 
 
 const contextManager = {
-    currentContext: "song",
+    currentContext: "clip",
     displayMode: "rows", // Default view for song mode
     lastSongMode: "song", // Tracks the last song-related mode
     lastClipSubView: "default", // Tracks last clip sub-view
