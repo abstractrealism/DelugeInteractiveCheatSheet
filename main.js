@@ -39,6 +39,8 @@ const projectFile = {
     rootNote: "C-2",
     projectClips: [],
     activePerformanceButton: 1,
+    topPerformanceValues: [1,1,0,0.5,0,0,0.5,0],
+    bottomPerformanceValues: [0.5,0,0,0,0,0,0,0],
 };
 
 
@@ -340,6 +342,11 @@ function initializeSVGControls() {
         button.addEventListener("click", () => {
             console.log(`Performance button ${index + 1} clicked.`);
             // Add additional functionality here
+            if (contextManager.currentContext == "song" || "arranger") {
+                projectFile.activePerformanceButton = index;
+                updateUI();
+            }
+
             switch (contextManager.currentContext) {
                 case "song":
                     
@@ -492,6 +499,8 @@ function updateUI() {
     for (var z = 0; z < deluge.allButtons.length; z++) {
         recolorButton(deluge.allButtons[z], "#959595")
     }
+    recolorPerformanceIndicator(deluge.topPerfomanceIndicator,0)
+    recolorPerformanceIndicator(deluge.bottomPerfomanceIndicator,0)
 
     // Clear any previous blinking intervals
     if (arrangerBlinkInterval) clearInterval(arrangerBlinkInterval);
@@ -506,7 +515,14 @@ function updateUI() {
             //affect entire
             if (contextManager.songAffectEntire == true) {
                 recolorButton(deluge.topButtons.affectEntire, "#ff6700")
+
+                //performance buttons
+                recolorButton(deluge.performanceButtons[projectFile.activePerformanceButton], "#ff6700")
+                recolorPerformanceIndicator(deluge.topPerfomanceIndicator, projectFile.topPerformanceValues[projectFile.activePerformanceButton])
+                recolorPerformanceIndicator(deluge.bottomPerfomanceIndicator, projectFile.bottomPerformanceValues[projectFile.activePerformanceButton])
             }
+
+
 
             //start adding clips
             for (var x = 0; x < 8; x++) {
@@ -538,7 +554,12 @@ function updateUI() {
 
              //affect entire
              if (contextManager.songAffectEntire == true) {
-                recolorButton(deluge.topButtons.affectEntire, "#ff6700")
+                recolorButton(deluge.topButtons.affectEntire, "#ff6700");
+
+                //performance buttons
+                recolorButton(deluge.performanceButtons[projectFile.activePerformanceButton], "#ff6700")
+                recolorPerformanceIndicator(deluge.topPerfomanceIndicator, projectFile.topPerformanceValues[projectFile.activePerformanceButton])
+                recolorPerformanceIndicator(deluge.bottomPerfomanceIndicator, projectFile.bottomPerformanceValues[projectFile.activePerformanceButton])
             }
 
             //end arranger
@@ -715,9 +736,9 @@ function isomorphicKeyboard() {
     //find color of c-2 and calculate from there
     //separate function that generates colors to use for root notes in non keyboard view
     //should also separate out notes to a separate function so other things can access the inkey notes, roots, etc
-    var startingPoint = 300;//DONT USE THIS
+    // var startingPoint = 300;//DONT USE THIS
     var isomorphicOffset = 5;
-    var horzOffset = 2 //This is because by default the bottom leftmost pad is D2
+    // var horzOffset = 2 //This is because by default the bottom leftmost pad is D2
     var vertOffset = 10; //for scrolling vertically
     var lightness;
     var saturation;
@@ -737,7 +758,7 @@ function isomorphicKeyboard() {
             // Calculate the note index with the row isomorphicOffset
             // const noteIndex = (col + rootNote + horzOffset + vertOffset + row * Math.abs(isomorphicOffset)) % 12;
             const noteIndex = (noteNumber) % 12;
-            lg(`Row: ${row}. Col: ${col}. NoteNumber: ${noteNumber}`)
+            // lg(`Row: ${row}. Col: ${col}. NoteNumber: ${noteNumber}`)
 
             // Check if the note is in the active scale
             const isInScale = contextManager.activeClip.scaleMode == true ? activeScale.includes(noteIndex) : false;
@@ -757,7 +778,7 @@ function isomorphicKeyboard() {
             noteNumber++;
         }
         noteNumber-= (16-isomorphicOffset);
-        startingPoint += 5 * isomorphicOffset;
+        // startingPoint += 5 * isomorphicOffset;
     }
 }
 
