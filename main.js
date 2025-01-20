@@ -425,9 +425,9 @@ function initializeSVGControls() {
 };
 
 function initializeSongProject() {
-    //Test other keys
-    projectFile.rootNote = 9;
-    projectFile.scale = scales.minor;
+    // //Test other keys
+    // projectFile.rootNote = 5;
+    // projectFile.scale = scales.minor;
     // Example of creating a new Clip object
     projectFile.inKeyNotes = getInKeyNotes(projectFile.rootNote, projectFile.scale);
     // lg(projectFile.inKeyNotes);
@@ -623,10 +623,11 @@ function updateUI() {
                 deluge.auditionColumn.forEach((button, index) => {
                     // const noteNum = contextManager.activeClip.clipVerticalScroll + projectFile.scale[index];
                     const noteNum = projectFile.inKeyNotes[projectFile.inKeyNotes.indexOf(contextManager.activeClip.clipVerticalScroll)+index];
+                    lg(noteNumberToString(noteNum))
                     // lg(projectFile.scale[index % projectFile.scale.length])
                     if (noteNum % 12 == projectFile.rootNote) {
                         // lg(getNoteHue(noteNum))
-                        lg(noteNum)
+                        // lg(noteNum)
                         // Set muted row color to yellow
                         recolorButton(button,hsbToHex(getNoteHue(noteNum), 100, 100));
                     } 
@@ -734,21 +735,19 @@ TBD
 // Song Functions
 // =====================
 
-//Generate in key notes array
-function getInKeyNotes(root,scale) {
-    //TD: eventually allow for roots over 12
-    //TD: check actual number and replace 150
+// Generate in-key notes array
+function getInKeyNotes(root, scale) {
     var output = [];
-    for (var noteNum = root % 12 - 12; noteNum < 150; noteNum++) {
-        if (noteNum >= 0) {
-            if (scale.includes((noteNum % 12)-root)) {
-                output.push(noteNum);
-            }
+    for (var noteNum = root - 12; noteNum < 150; noteNum++) {
+        // Wrap noteNum to a 0-11 range, relative to the root
+        var noteOffset = (noteNum - root + 12) % 12; // Shift to handle negatives properly
+        if (scale.includes(noteOffset)) {
+            output.push(noteNum);
         }
     }
-    // lg(`in key notes: ${output}`)
     return output;
 }
+
 
 // Function to cycle the section color to the next one
 function changeSectionColor(clip) {
@@ -836,6 +835,27 @@ function isomorphicKeyboard() {
 // =====================
 // Utility Functions
 // =====================
+
+function noteNumberToString(n){
+    if (!isNaN(n = parseInt(n))) {
+        var octaveNumber;
+        var semitone;
+     
+        octaveNumber = parseInt(n / 12) - 2 // so that 60 will be C3
+        semitone = n % 12
+        
+        notesInOctave = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
+
+
+        return notesInOctave[semitone] + octaveNumber;
+        
+    } else {
+        console.log("Not a number")
+    }
+    
+
+}
+
 
 function recolorPerformanceIndicator(indic, val) {
     recolorButton(indic.children[0], hsbToHex(24, Math.min(100, Math.max(0 , (val - 0.75) * 400)), Math.min(100, 80 + Math.max(0 , (val - 0.75) * 500))))
