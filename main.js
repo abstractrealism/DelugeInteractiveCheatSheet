@@ -36,11 +36,14 @@ const scales = {
 //actually, should have a similar global constant to the context manager that's for the song project file. contextmanager should stay just about views / context
 const projectFile = {
     scale: scales.major,
-    rootNote: "C-2",
+    // rootNote: "C-2",
+    rootNote: 0, //TD: figure out how to convert note numbers to names, probably using the same modulus logic from iso keyboard
+    //TD: allow for rootNotes outside the first octave, probably a .absoluteRootNote key as well
     projectClips: [],
     activePerformanceButton: 1,
     topPerformanceValues: [1,1,0,0.5,0,0,0.5,0],
     bottomPerformanceValues: [0.5,0,0,0,0,0,0,0],
+    inKeyNotes: [],
 };
 
 
@@ -94,6 +97,11 @@ function Clip(clipType, section, scaleMode) {
     this.setSection(section);
     this.mutedRows = [];
     this.preset = "";
+    this.isomorphicVerticalScroll = 10;
+    this.isomorphicOffset = 5;
+    this.clipZoom = 1;
+    // this.clipVerticalScroll = 55 + (5 + projectFile.rootNote) % 12; //this should be 28 for C3. shouldn't count out of scale notes
+    this.clipVerticalScroll = getInitClipVerticalScroll(projectFile.rootNote); //this should be 28 for C3. shouldn't count out of scale notes
     if (this.clipType == "synth") {
         this.affectEntire = true;
     } else {
@@ -417,7 +425,12 @@ function initializeSVGControls() {
 };
 
 function initializeSongProject() {
+    //Test other keys
+    projectFile.rootNote = 9;
+    projectFile.scale = scales.minor;
     // Example of creating a new Clip object
+    projectFile.inKeyNotes = getInKeyNotes(projectFile.rootNote, projectFile.scale);
+    // lg(projectFile.inKeyNotes);
     const clip0 = new Clip("synth", "blue", true);
     clip0.randomColorOffset = 300;
     projectFile.projectClips.push(clip0);
@@ -605,6 +618,19 @@ function updateUI() {
                         recolorButton(button,"green");
                     }
                 });
+
+                //add root notes to audition column
+                deluge.auditionColumn.forEach((button, index) => {
+                    // const noteNum = contextManager.activeClip.clipVerticalScroll + projectFile.scale[index];
+                    const noteNum = projectFile.inKeyNotes[projectFile.inKeyNotes.indexOf(contextManager.activeClip.clipVerticalScroll)+index];
+                    // lg(projectFile.scale[index % projectFile.scale.length])
+                    if (noteNum % 12 == projectFile.rootNote) {
+                        // lg(getNoteHue(noteNum))
+                        lg(noteNum)
+                        // Set muted row color to yellow
+                        recolorButton(button,hsbToHex(getNoteHue(noteNum), 100, 100));
+                    } 
+                });
             }
 
             //scale button
@@ -708,6 +734,22 @@ TBD
 // Song Functions
 // =====================
 
+//Generate in key notes array
+function getInKeyNotes(root,scale) {
+    //TD: eventually allow for roots over 12
+    //TD: check actual number and replace 150
+    var output = [];
+    for (var noteNum = root % 12 - 12; noteNum < 150; noteNum++) {
+        if (noteNum >= 0) {
+            if (scale.includes((noteNum % 12)-root)) {
+                output.push(noteNum);
+            }
+        }
+    }
+    // lg(`in key notes: ${output}`)
+    return output;
+}
+
 // Function to cycle the section color to the next one
 function changeSectionColor(clip) {
     const currentIndex = validSections.indexOf(clip.section);
@@ -731,15 +773,24 @@ function getNoteHue(noteNum) {
     return contextManager.activeClip.randomColorOffset - (noteNum * 5);
 }
 
+function getInitClipVerticalScroll(root) {
+    var startingScroll = 55;
+    while (startingScroll % 12 !== root) {
+        startingScroll++;
+    }
+    lg(`starting scroll: ${startingScroll}`)
+    return startingScroll;
+}
+
 function isomorphicKeyboard() {
     //starting point should be c-2
     //find color of c-2 and calculate from there
     //separate function that generates colors to use for root notes in non keyboard view
     //should also separate out notes to a separate function so other things can access the inkey notes, roots, etc
     // var startingPoint = 300;//DONT USE THIS
-    var isomorphicOffset = 5;
-    // var horzOffset = 2 //This is because by default the bottom leftmost pad is D2
-    var vertOffset = 10; //for scrolling vertically
+    var isomorphicOffset = contextManager.activeClip.isomorphicOffset;
+    // var horzOffset = 0 /////TD: Need to bring this back for horizontal scrolling
+    var vertOffset = contextManager.activeClip.isomorphicVerticalScroll; //for scrolling vertically
     var lightness;
     var saturation;
     var noteNumber = vertOffset * isomorphicOffset;
@@ -808,6 +859,10 @@ function hsbToHex(h, s, br) {
     
 
 function hsbToRgb(h, s, br) {
+    // Normalize hue to be within [0, 359] using a while loop
+    while (h < 0) h += 360;
+    while (h >= 360) h -= 360;
+
     s /= 100;
     br /= 100;
   
