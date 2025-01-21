@@ -146,13 +146,13 @@ function initializeGrid() {
     deluge.mainGrid = delugeSvgDoc.querySelector("#mainGrid");
     deluge.mainGridPads = [];
 
-    for (let x = 0; x < deluge.mainGrid.children.length; x++) {
-        deluge.mainGrid[`row${x}`] = deluge.mainGrid.children[x];
-        for (let y = 0; y < deluge.mainGrid[`row${x}`].children.length; y++) {
-            deluge.mainGrid[`row${x}`][`pad${y}`] = deluge.mainGrid[`row${x}`].children[y].children[0];
-            deluge.mainGridPads.push(deluge.mainGrid[`row${x}`][`pad${y}`]);
+    for (let y = 0; y < deluge.mainGrid.children.length; y++) {
+        deluge.mainGrid[`row${y}`] = deluge.mainGrid.children[y];
+        for (let x = 0; x < deluge.mainGrid[`row${y}`].children.length; x++) {
+            deluge.mainGrid[`row${y}`][`pad${x}`] = deluge.mainGrid[`row${y}`].children[x].children[0];
+            deluge.mainGridPads.push(deluge.mainGrid[`row${y}`][`pad${x}`]);
         }
-        deluge.mainGrid[`row${x}`].clip = false;
+        deluge.mainGrid[`row${y}`].clip = false;
     }
 }
 
@@ -524,6 +524,12 @@ function updateUI() {
             recolorButton(deluge.songButton, "#007cff"); // Song button stays lit
             if (contextManager.displayMode === "performance") {
                 recolorButton(deluge.topButtons.keyboard, "#007cff");
+                try {
+                    performanceView();
+                    
+                } catch (error) {
+                    alert(error)
+                }
             }
             //affect entire
             if (contextManager.songAffectEntire == true) {
@@ -538,15 +544,15 @@ function updateUI() {
 
 
             //start adding clips
-            for (var x = 0; x < 8; x++) {
-                if(deluge.mainGrid[`row${x}`].clip){
+            for (var y = 0; y < 8; y++) {
+                if(deluge.mainGrid[`row${y}`].clip){
                     //TD:
                     //need to improve the color accuracy of these hex codes
                     //also add other section colors. probably store all section colors in an array to simplify switching through them
                     //add a "highestUsedSectionColor" to the context manager since it's not as simple as looping through all of them
                     //actually, should have a similar global constant to the context manager that's for the song project file. contextmanager should stay just about views / context
-                    recolorButton(deluge.muteColumn[x], "#00ff00");
-                    recolorButton(deluge.auditionColumn[x], deluge.mainGrid[`row${x}`].clip.section);
+                    recolorButton(deluge.muteColumn[y], "#00ff00");
+                    recolorButton(deluge.auditionColumn[y], deluge.mainGrid[`row${y}`].clip.section);
 
                 }
             }
@@ -557,6 +563,7 @@ function updateUI() {
         case "arranger":
             if (contextManager.displayMode === "performance") {
                 recolorButton(deluge.topButtons.keyboard, "#007cff"); // Keyboard button lit in performance
+                performanceView();
             }
             // Always blink the song button in arranger mode
             let isSongBlue = false;
@@ -779,6 +786,48 @@ function getInitClipVerticalScroll(root) {
     }
     lg(`starting scroll: ${startingScroll}`)
     return startingScroll;
+}
+
+function performanceView() {
+    for (var y = 0; y < 8; y++) {
+        for (var x = 0; x < 16; x++) {
+            var saturation = 70;
+            if (x >= 9 && x < 13) {
+                saturation = 30;
+            } else if (x == 13 || x == 14){
+                saturation = 50;
+            }
+            var columnColor = hsbToHex(getPerformanceColumnHue(x), saturation, 100)
+            recolorButton(deluge.mainGrid[`row${y}`][`pad${x}`], columnColor);
+        }
+    }
+    
+}
+
+function getPerformanceColumnHue(col) {
+    var hue;
+    if (col < 2) {
+        hue = 0;
+    } else if (col < 4) {
+        hue = 30;
+    } else if (col < 6) {
+        hue = 60;
+    } else if (col < 7) {
+        hue = 90;
+    } else if (col < 9) {
+        hue = 180;
+    } else if (col < 13) {
+        hue = 285;
+    } else if (col < 15) {
+        hue = 290;
+    } else if (col < 16) {
+        hue = 240;
+    } else if (col > 15) {
+        console.log("Error in column number")
+    } else if (isNaN(col)) {
+        console.log("Error in column number: NaN")
+    }
+    return hue
 }
 
 function isomorphicKeyboard() {
