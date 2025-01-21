@@ -593,6 +593,7 @@ function updateUI() {
                     
                 } else if(contextManager.activeClip.clipType == "kit") {
                     //
+                    kitKeyboard();
                 }
                 recolorButton(deluge.topButtons.keyboard, "#007cff");
                 if (contextManager.lastNonKeyboardView === "automation") {
@@ -828,6 +829,23 @@ function getPerformanceColumnHue(col) {
         console.log("Error in column number: NaN")
     }
     return hue
+}
+
+function kitKeyboard() {
+    //eventually get the colors from the designated colors of the kit rows
+    kitPad(0, 4, 0, 4, 0);
+}
+
+function kitPad(x,w,y,h,hue) {
+    var lightness = 30;
+    var sat = 22;
+    for (var row = y; row < y+h; row++) {
+        for (var col = x; col < x+w; col++) {
+            recolorButton(deluge.mainGrid[`row${row}`][`pad${col}`], hsbToHex(hue, sat, lightness))
+            lightness += (100-30) / (w * h);
+            sat += (100 - 22) / (w * h);
+        }
+    }
 }
 
 function isomorphicKeyboard() {
