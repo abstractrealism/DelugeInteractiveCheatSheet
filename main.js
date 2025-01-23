@@ -593,7 +593,7 @@ function updateUI() {
                     
                 } else if(contextManager.activeClip.clipType == "kit") {
                     //
-                    kitKeyboard();
+                    kitKeyboard(4);
                 }
                 recolorButton(deluge.topButtons.keyboard, "#007cff");
                 if (contextManager.lastNonKeyboardView === "automation") {
@@ -831,17 +831,41 @@ function getPerformanceColumnHue(col) {
     return hue
 }
 
-function kitKeyboard() {
-    //eventually get the colors from the designated colors of the kit rows
-    kitPad(0, 4, 0, 4, 0);
+function kitKeyboard(size) {
+    if (isNaN(size) || size > 8) {
+        console.log("error in kit kb size")
+        return
+    }
+    var x = 0;
+    var y = 0;
+    // var count = 0 //// add to below:  /*&& count < projectFile.activeClip.rowsCount*/
+    while (deluge.mainGrid.row7.pad15.style.fill == "rgb(149, 149, 149)"){
+        if (x > 15) {
+            x = 0;
+            y += size;
+        }
+        //TD: use assigned colors from clip view, also, make overlapped ones off right edge tie to the one at the start of the next row; (This will be invalid when 1.3 comes out)
+        kitPad(x, size, y, size, Math.floor(Math.random()*360))
+        x += size;
+        
+    }
 }
 
 function kitPad(x,w,y,h,hue) {
     var lightness = 30;
     var sat = 22;
+    if(w == 1 && h == 1){
+        lightness = 100;
+        sat = 100;
+    }
     for (var row = y; row < y+h; row++) {
+        if (row == 8) {
+            break;
+        }
         for (var col = x; col < x+w; col++) {
-            recolorButton(deluge.mainGrid[`row${row}`][`pad${col}`], hsbToHex(hue, sat, lightness))
+            if (col < 16) {
+                recolorButton(deluge.mainGrid[`row${row}`][`pad${col}`], hsbToHex(hue, sat, lightness))
+            }
             lightness += (100-30) / (w * h);
             sat += (100 - 22) / (w * h);
         }
