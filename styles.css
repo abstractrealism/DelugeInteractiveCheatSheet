@@ -11,6 +11,18 @@
     width: 80vw;
 }
 
+#modeDisplay {
+    background-color: lightgrey;
+    padding: 0.5em;
+    border-radius: 10px;
+}
+
+#modeDisplay span {
+    padding: 0.5em;
+    border-radius: 10px;
+    /* border: 2px solid green; */
+}
+
 #flexContainer {
     display: flex;
     flex-direction: column;
@@ -25,4 +37,21 @@
 
 #contextDisplay {
     padding: 1em;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+#contextDisplay > div {
+    text-align: center;
+    padding-top: 1em;
+}
+
+.highlighted {
+    background-color: green;
+}
+
+.viewSpan {
+    text-align: center;
 }

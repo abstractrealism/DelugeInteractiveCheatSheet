@@ -503,10 +503,22 @@ function updateContext(newContext, subView = null) {
 
 
 function updateUI() {
-    const display = document.getElementById("contextDisplay");
-    if (display) {
-        display.innerText = `Mode: ${contextManager.currentContext}, View: ${contextManager.displayMode}`;
+    // const display = document.getElementById("contextDisplay");
+    const modeDisplay = document.getElementById("modeDisplay");
+
+    if (modeDisplay) {
+        for (var x = 0; x < modeDisplay.children.length; x++) {
+            lg(modeDisplay.children[x])
+            modeDisplay.children[x].classList.remove("highlighted");
+        }
+        const currentMode = document.getElementById(`${contextManager.currentContext}Mode`)
+        if (currentMode) {
+            currentMode.classList.add("highlighted")
+        }
+        // display.innerText = `Mode: ${contextManager.currentContext}, View: ${contextManager.displayMode}`;
     }
+    const viewDisplay = document.getElementById("subviewDisplay");
+    viewDisplay.innerHTML = `<span class="viewSpan">${titleCase(contextManager.displayMode)}</span>`;
 
     // Reset all buttons to their default color
     for (var z = 0; z < deluge.allButtons.length; z++) {
@@ -926,6 +938,18 @@ function isomorphicKeyboard() {
 // =====================
 // Utility Functions
 // =====================
+
+function titleCase(str) {
+    if ((str === null) || (str === ''))
+        return false;
+    else
+        str = str.toString();
+
+    return str.replace(/\w\S*/g, function (txt) {
+        return txt.charAt(0).toUpperCase() +
+            txt.substr(1).toLowerCase();
+    });
+}
 
 function noteNumberToString(n){
     if (!isNaN(n = parseInt(n))) {
