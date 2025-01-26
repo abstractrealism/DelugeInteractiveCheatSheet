@@ -36,11 +36,11 @@
 }
 
 #contextDisplay {
-    padding: 1em;
+    padding: 1em 0.5em 0em;
     display: flex;
-    flex-direction: column;
+    /* flex-direction: column; */
     justify-content: center;
-    align-items: center;
+    align-items: flex-start;
 }
 
 #contextDisplay > div {
@@ -54,4 +54,12 @@
 
 .viewSpan {
     text-align: center;
+}
+
+#subviewDisplay {
+    padding-top: 0.5em;
+}
+
+#viewContainer {
+    padding-left: 1.5em;
 }
