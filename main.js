@@ -69,6 +69,8 @@ const contextManager = {
     activeClip: null,
 };
 
+const pressedButtons = [];
+
 var presets = {};
 presets['presetA'] = new TestPreset('#aa23b0', '#19380a', '#56b390', '#808080')
 
@@ -140,8 +142,8 @@ const testButton = document.getElementById("testButton");
 testButton.addEventListener('click', testing);
 
 //this could just go in SVGControls?
+const delugeSvgDoc = document.querySelector("#delugeSVG").contentDocument;
 function initializeGrid() {
-    const delugeSvgDoc = document.querySelector("#delugeSVG").contentDocument;
 
     deluge.mainGrid = delugeSvgDoc.querySelector("#mainGrid");
     deluge.mainGridPads = [];
@@ -157,7 +159,7 @@ function initializeGrid() {
 }
 
 function initializeSVGControls() {
-    const delugeSvgDoc = document.querySelector("#delugeSVG").contentDocument;
+    // const delugeSvgDoc = document.querySelector("#delugeSVG").contentDocument;
 
     // Initialize topButtons object
     deluge.topButtons = deluge.topButtons || {};
@@ -266,6 +268,19 @@ function initializeSVGControls() {
             contextManager.activeClip.scaleMode = !contextManager.activeClip.scaleMode;
             updateUI();
         }
+    });
+    /// ====== SHIFT BUTTON =========
+    deluge.allButtons.push(deluge.topButtons.shiftButton = delugeSvgDoc.querySelector("#shift"));
+    deluge.topButtons.shiftButton.addEventListener("click", () => {
+        // console.log(pressedButtons)
+        var shiftIndex = pressedButtons.indexOf("shift");
+        lg(shiftIndex)
+        if (shiftIndex !== -1) {
+            pressedButtons.splice(shiftIndex,1);
+        } else {
+            pressedButtons.push("shift");
+        }
+        updateUI();
     });
 
     // ============== Mute and Audition Columns ==============
@@ -531,6 +546,11 @@ function updateUI() {
     if (arrangerBlinkInterval) clearInterval(arrangerBlinkInterval);
     if (clipBlinkInterval) clearInterval(clipBlinkInterval);
 
+    //global things
+    if (pressedButtons.includes("shift")) {
+        recolorButton(deluge.topButtons.shiftButton, "#007cff");
+    }
+
     switch (contextManager.currentContext) {
         case "song":
             recolorButton(deluge.songButton, "#007cff"); // Song button stays lit
@@ -709,7 +729,7 @@ var presetDiv = document.getElementById('preset-div');
 });
 
 function testing() {
-
+    pressedButtons = [];
     //randomize main grid
     // for (var x = 0; x < deluge.mainGridPads.length; x++) {
     //     setRandomColor(deluge.mainGridPads[x])
@@ -787,6 +807,48 @@ function changeSectionColor(clip) {
 // =====================
 // UI Functions
 // =====================
+
+function keyListeners(){
+
+    // const pressedButtons = [];
+    function handleKeyDown(e){
+          // Check if key pressed is "Shift"
+         if (e.key === 'Shift') {
+            // Only add "shift" if not already present in the array
+            if (!pressedButtons.includes('shift')) {
+                pressedButtons.push('shift');
+                // e.g. notify your UI here
+                console.log(`Shift pressed. pressedButtons: ${pressedButtons}`);
+            }
+            updateUI();
+          }
+    }
+
+    function handleKeyUp(e) {
+            
+        // Check if key released is "Shift"
+        if (e.key === 'Shift') {
+            const index = pressedButtons.indexOf('shift');
+            // Remove it from the array if it’s there
+            if (index !== -1) {
+                pressedButtons.splice(index, 1);
+                // e.g. notify your UI here
+                console.log(`Shift released. pressedButtons: ${pressedButtons}`);
+            }
+            updateUI();
+        }
+    }
+
+    // Listen for keydown
+    document.addEventListener('keydown', handleKeyDown);
+    if(delugeSvgDoc)
+    delugeSvgDoc.addEventListener('keydown', handleKeyDown);
+
+    // Listen for keyup
+    document.addEventListener('keyup', handleKeyUp);
+    delugeSvgDoc.addEventListener('keyup', handleKeyUp);
+
+}
 
 function getNoteHue(noteNum) {
     return contextManager.activeClip.randomColorOffset - (noteNum * 5);
@@ -1138,5 +1200,6 @@ window.addEventListener("load", function () {
     initializeGrid();
     initializeSVGControls();
     initializeSongProject();
+    keyListeners();
     updateUI();
 });//end on load
