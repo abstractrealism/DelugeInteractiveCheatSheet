@@ -142,8 +142,8 @@ const testButton = document.getElementById("testButton");
 testButton.addEventListener('click', testing);
 
 //this could just go in SVGControls?
-const delugeSvgDoc = document.querySelector("#delugeSVG").contentDocument;
 function initializeGrid() {
+    const delugeSvgDoc = document.querySelector("#delugeSVG").contentDocument;
 
     deluge.mainGrid = delugeSvgDoc.querySelector("#mainGrid");
     deluge.mainGridPads = [];
@@ -265,6 +265,7 @@ function initializeSVGControls() {
     deluge.allButtons.push(deluge.topButtons.scaleButton = delugeSvgDoc.querySelector("#scale"));
     deluge.topButtons.scaleButton.addEventListener("click", () => {
         if (contextManager.currentContext === "clip" && ["synth","midi","cv"].includes(contextManager.activeClip.clipType)) {
+            
             contextManager.activeClip.scaleMode = !contextManager.activeClip.scaleMode;
             updateUI();
         }
