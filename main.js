@@ -143,7 +143,7 @@ testButton.addEventListener('click', testing);
 
 //this could just go in SVGControls?
 function initializeGrid() {
-    const delugeSvgDoc = document.querySelector("#delugeSVG").contentDocument;
+ 
 
     deluge.mainGrid = delugeSvgDoc.querySelector("#mainGrid");
     deluge.mainGridPads = [];
@@ -1198,6 +1198,7 @@ function applyPreset(targetID) {
 // =====================
 
 window.addEventListener("load", function () {
+    const delugeSvgDoc = document.querySelector("#delugeSVG").contentDocument;
     initializeGrid();
     initializeSVGControls();
     initializeSongProject();
