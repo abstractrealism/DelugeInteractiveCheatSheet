@@ -1,0 +1,65 @@
+#delugeSVG {
+    /* display: block; */
+    margin: 0 auto;
+    max-width: 100%;
+    max-height: 90vh;
+/* }
+
+#image-stack {
+    /* align-self: stretch; */
+    flex: 2;
+    width: 80vw;
+}
+
+#modeDisplay {
+    background-color: lightgrey;
+    padding: 0.5em;
+    border-radius: 10px;
+}
+
+#modeDisplay span {
+    padding: 0.5em;
+    border-radius: 10px;
+    /* border: 2px solid green; */
+}
+
+#flexContainer {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.inline {
+    display: inline-block;
+}
+
+#contextDisplay {
+    padding: 1em 0.5em 0em;
+    display: flex;
+    /* flex-direction: column; */
+    justify-content: center;
+    align-items: flex-start;
+}
+
+#contextDisplay > div {
+    text-align: center;
+    padding-top: 1em;
+}
+
+.highlighted {
+    background-color: green;
+}
+
+.viewSpan {
+    text-align: center;
+}
+
+#subviewDisplay {
+    padding-top: 0.5em;
+}
+
+#viewContainer {
+    padding-left: 1.5em;
+}

@@ -69,6 +69,8 @@ const contextManager = {
     activeClip: null,
 };
 
+const pressedButtons = [];
+
 var presets = {};
 presets['presetA'] = new TestPreset('#aa23b0', '#19380a', '#56b390', '#808080')
 
@@ -140,24 +142,24 @@ const testButton = document.getElementById("testButton");
 testButton.addEventListener('click', testing);
 
 //this could just go in SVGControls?
+const delugeSvgDoc = document.querySelector("#delugeSVG").contentDocument;
 function initializeGrid() {
-    const delugeSvgDoc = document.querySelector("#delugeSVG").contentDocument;
 
     deluge.mainGrid = delugeSvgDoc.querySelector("#mainGrid");
     deluge.mainGridPads = [];
 
-    for (let x = 0; x < deluge.mainGrid.children.length; x++) {
-        deluge.mainGrid[`row${x}`] = deluge.mainGrid.children[x];
-        for (let y = 0; y < deluge.mainGrid[`row${x}`].children.length; y++) {
-            deluge.mainGrid[`row${x}`][`pad${y}`] = deluge.mainGrid[`row${x}`].children[y].children[0];
-            deluge.mainGridPads.push(deluge.mainGrid[`row${x}`][`pad${y}`]);
+    for (let y = 0; y < deluge.mainGrid.children.length; y++) {
+        deluge.mainGrid[`row${y}`] = deluge.mainGrid.children[y];
+        for (let x = 0; x < deluge.mainGrid[`row${y}`].children.length; x++) {
+            deluge.mainGrid[`row${y}`][`pad${x}`] = deluge.mainGrid[`row${y}`].children[x].children[0];
+            deluge.mainGridPads.push(deluge.mainGrid[`row${y}`][`pad${x}`]);
         }
-        deluge.mainGrid[`row${x}`].clip = false;
+        deluge.mainGrid[`row${y}`].clip = false;
     }
 }
 
 function initializeSVGControls() {
-    const delugeSvgDoc = document.querySelector("#delugeSVG").contentDocument;
+    // const delugeSvgDoc = document.querySelector("#delugeSVG").contentDocument;
 
     // Initialize topButtons object
     deluge.topButtons = deluge.topButtons || {};
@@ -266,6 +268,19 @@ function initializeSVGControls() {
             contextManager.activeClip.scaleMode = !contextManager.activeClip.scaleMode;
             updateUI();
         }
+    });
+    /// ====== SHIFT BUTTON =========
+    deluge.allButtons.push(deluge.topButtons.shiftButton = delugeSvgDoc.querySelector("#shift"));
+    deluge.topButtons.shiftButton.addEventListener("click", () => {
+        // console.log(pressedButtons)
+        var shiftIndex = pressedButtons.indexOf("shift");
+        lg(shiftIndex)
+        if (shiftIndex !== -1) {
+            pressedButtons.splice(shiftIndex,1);
+        } else {
+            pressedButtons.push("shift");
+        }
+        updateUI();
     });
 
     // ============== Mute and Audition Columns ==============
@@ -503,10 +518,22 @@ function updateContext(newContext, subView = null) {
 
 
 function updateUI() {
-    const display = document.getElementById("contextDisplay");
-    if (display) {
-        display.innerText = `Mode: ${contextManager.currentContext}, View: ${contextManager.displayMode}`;
+    // const display = document.getElementById("contextDisplay");
+    const modeDisplay = document.getElementById("modeDisplay");
+
+    if (modeDisplay) {
+        for (var x = 0; x < modeDisplay.children.length; x++) {
+            lg(modeDisplay.children[x])
+            modeDisplay.children[x].classList.remove("highlighted");
+        }
+        const currentMode = document.getElementById(`${contextManager.currentContext}Mode`)
+        if (currentMode) {
+            currentMode.classList.add("highlighted")
+        }
+        // display.innerText = `Mode: ${contextManager.currentContext}, View: ${contextManager.displayMode}`;
     }
+    const viewDisplay = document.getElementById("subviewDisplay");
+    viewDisplay.innerHTML = `<span class="viewSpan">${titleCase(contextManager.displayMode)}</span>`;
 
     // Reset all buttons to their default color
     for (var z = 0; z < deluge.allButtons.length; z++) {
@@ -519,11 +546,22 @@ function updateUI() {
     if (arrangerBlinkInterval) clearInterval(arrangerBlinkInterval);
     if (clipBlinkInterval) clearInterval(clipBlinkInterval);
 
+    //global things
+    if (pressedButtons.includes("shift")) {
+        recolorButton(deluge.topButtons.shiftButton, "#007cff");
+    }
+
     switch (contextManager.currentContext) {
         case "song":
             recolorButton(deluge.songButton, "#007cff"); // Song button stays lit
             if (contextManager.displayMode === "performance") {
                 recolorButton(deluge.topButtons.keyboard, "#007cff");
+                try {
+                    performanceView();
+                    
+                } catch (error) {
+                    alert(error)
+                }
             }
             //affect entire
             if (contextManager.songAffectEntire == true) {
@@ -538,15 +576,15 @@ function updateUI() {
 
 
             //start adding clips
-            for (var x = 0; x < 8; x++) {
-                if(deluge.mainGrid[`row${x}`].clip){
+            for (var y = 0; y < 8; y++) {
+                if(deluge.mainGrid[`row${y}`].clip){
                     //TD:
                     //need to improve the color accuracy of these hex codes
                     //also add other section colors. probably store all section colors in an array to simplify switching through them
                     //add a "highestUsedSectionColor" to the context manager since it's not as simple as looping through all of them
                     //actually, should have a similar global constant to the context manager that's for the song project file. contextmanager should stay just about views / context
-                    recolorButton(deluge.muteColumn[x], "#00ff00");
-                    recolorButton(deluge.auditionColumn[x], deluge.mainGrid[`row${x}`].clip.section);
+                    recolorButton(deluge.muteColumn[y], "#00ff00");
+                    recolorButton(deluge.auditionColumn[y], deluge.mainGrid[`row${y}`].clip.section);
 
                 }
             }
@@ -557,6 +595,7 @@ function updateUI() {
         case "arranger":
             if (contextManager.displayMode === "performance") {
                 recolorButton(deluge.topButtons.keyboard, "#007cff"); // Keyboard button lit in performance
+                performanceView();
             }
             // Always blink the song button in arranger mode
             let isSongBlue = false;
@@ -586,6 +625,7 @@ function updateUI() {
                     
                 } else if(contextManager.activeClip.clipType == "kit") {
                     //
+                    kitKeyboard(4);
                 }
                 recolorButton(deluge.topButtons.keyboard, "#007cff");
                 if (contextManager.lastNonKeyboardView === "automation") {
@@ -689,7 +729,7 @@ var presetDiv = document.getElementById('preset-div');
 });
 
 function testing() {
-
+    pressedButtons = [];
     //randomize main grid
     // for (var x = 0; x < deluge.mainGridPads.length; x++) {
     //     setRandomColor(deluge.mainGridPads[x])
@@ -768,6 +808,48 @@ function changeSectionColor(clip) {
 // UI Functions
 // =====================
 
+function keyListeners(){
+
+    // const pressedButtons = [];
+    function handleKeyDown(e){
+          // Check if key pressed is "Shift"
+         if (e.key === 'Shift') {
+            // Only add "shift" if not already present in the array
+            if (!pressedButtons.includes('shift')) {
+                pressedButtons.push('shift');
+                // e.g. notify your UI here
+                console.log(`Shift pressed. pressedButtons: ${pressedButtons}`);
+            }
+            updateUI();
+          }
+    }
+
+    function handleKeyUp(e) {
+            
+        // Check if key released is "Shift"
+        if (e.key === 'Shift') {
+            const index = pressedButtons.indexOf('shift');
+            // Remove it from the array if it’s there
+            if (index !== -1) {
+                pressedButtons.splice(index, 1);
+                // e.g. notify your UI here
+                console.log(`Shift released. pressedButtons: ${pressedButtons}`);
+            }
+            updateUI();
+        }
+    }
+
+    // Listen for keydown
+    document.addEventListener('keydown', handleKeyDown);
+    if(delugeSvgDoc)
+    delugeSvgDoc.addEventListener('keydown', handleKeyDown);
+
+    // Listen for keyup
+    document.addEventListener('keyup', handleKeyUp);
+    delugeSvgDoc.addEventListener('keyup', handleKeyUp);
+
+}
+
 function getNoteHue(noteNum) {
     return contextManager.activeClip.randomColorOffset - (noteNum * 5);
 }
@@ -779,6 +861,89 @@ function getInitClipVerticalScroll(root) {
     }
     lg(`starting scroll: ${startingScroll}`)
     return startingScroll;
+}
+
+function performanceView() {
+    for (var y = 0; y < 8; y++) {
+        for (var x = 0; x < 16; x++) {
+            var saturation = 70;
+            if (x >= 9 && x < 13) {
+                saturation = 30;
+            } else if (x == 13 || x == 14){
+                saturation = 50;
+            }
+            var columnColor = hsbToHex(getPerformanceColumnHue(x), saturation, 100)
+            recolorButton(deluge.mainGrid[`row${y}`][`pad${x}`], columnColor);
+        }
+    }
+    
+}
+
+function getPerformanceColumnHue(col) {
+    var hue;
+    if (col < 2) {
+        hue = 0;
+    } else if (col < 4) {
+        hue = 30;
+    } else if (col < 6) {
+        hue = 60;
+    } else if (col < 7) {
+        hue = 90;
+    } else if (col < 9) {
+        hue = 180;
+    } else if (col < 13) {
+        hue = 285;
+    } else if (col < 15) {
+        hue = 290;
+    } else if (col < 16) {
+        hue = 240;
+    } else if (col > 15) {
+        console.log("Error in column number")
+    } else if (isNaN(col)) {
+        console.log("Error in column number: NaN")
+    }
+    return hue
+}
+
+function kitKeyboard(size) {
+    if (isNaN(size) || size > 8) {
+        console.log("error in kit kb size")
+        return
+    }
+    var x = 0;
+    var y = 0;
+    // var count = 0 //// add to below:  /*&& count < projectFile.activeClip.rowsCount*/
+    while (deluge.mainGrid.row7.pad15.style.fill == "rgb(149, 149, 149)"){
+        if (x > 15) {
+            x = 0;
+            y += size;
+        }
+        //TD: use assigned colors from clip view, also, make overlapped ones off right edge tie to the one at the start of the next row; (This will be invalid when 1.3 comes out)
+        kitPad(x, size, y, size, Math.floor(Math.random()*360))
+        x += size;
+        
+    }
+}
+
+function kitPad(x,w,y,h,hue) {
+    var lightness = 30;
+    var sat = 22;
+    if(w == 1 && h == 1){
+        lightness = 100;
+        sat = 100;
+    }
+    for (var row = y; row < y+h; row++) {
+        if (row == 8) {
+            break;
+        }
+        for (var col = x; col < x+w; col++) {
+            if (col < 16) {
+                recolorButton(deluge.mainGrid[`row${row}`][`pad${col}`], hsbToHex(hue, sat, lightness))
+            }
+            lightness += (100-30) / (w * h);
+            sat += (100 - 22) / (w * h);
+        }
+    }
 }
 
 function isomorphicKeyboard() {
@@ -835,6 +1000,18 @@ function isomorphicKeyboard() {
 // =====================
 // Utility Functions
 // =====================
+
+function titleCase(str) {
+    if ((str === null) || (str === ''))
+        return false;
+    else
+        str = str.toString();
+
+    return str.replace(/\w\S*/g, function (txt) {
+        return txt.charAt(0).toUpperCase() +
+            txt.substr(1).toLowerCase();
+    });
+}
 
 function noteNumberToString(n){
     if (!isNaN(n = parseInt(n))) {
@@ -1023,5 +1200,6 @@ window.addEventListener("load", function () {
     initializeGrid();
     initializeSVGControls();
     initializeSongProject();
+    keyListeners();
     updateUI();
 });//end on load

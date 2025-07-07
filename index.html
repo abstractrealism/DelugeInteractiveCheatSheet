@@ -7,27 +7,45 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    
-    <!-- <img src="imgs/Untitled.svg" alt="" id = "testSVG"> -->
-    <div>testing</div>
-    <button id = "testButton" type="button">
-    Click Me!</button>
+    <div id="flexContainer">
+            
+        <!-- <img src="imgs/Untitled.svg" alt="" id = "testSVG"> -->
+        <div class = "buttons-row">
+            
+        <div class="inline" >testing</div>
+        <button id = "testButton" type="button">
+        Click Me!</button>
 
-    <div id = 'preset-div'>
-        <button class = "preset-button" id="presetA">Preset A</button>
+        <div class="inline" id = 'preset-div'>
+            <button class = "preset-button" id="presetA">Preset A</button>
 
-    </div>
-    <div id="contextDisplay">
-        Clip Mode, Row View
-    </div>
-
-    <div id = 'image-stack'>
-        <div id = 'deluge-div'>
-            <object id="delugeSVG" type="image/svg+xml" data="imgs/Deluge.svg"></object>
         </div>
-        <!-- <object id="testGrid" type="image/svg+xml" data="imgs/Untitled.svg"></object> -->
-        <object id="lineSVG" type="image/svg+xml" data="imgs/testLine.svg" style="max-width: 50%;"></object>
-        
+
+        </div>
+        <div id="contextDisplay">
+            <div>
+                Mode:
+                <div id="modeDisplay">
+                     <span id="songMode">Song</span> <span id="arrangerMode">Arranger</span> <span id="clipMode">Clip</span>
+                </div>
+            </div>
+            <div id = "viewContainer">
+                View: 
+                <div id="subviewDisplay">
+                </div>
+            </div>
+            <!-- Clip Mode, Row View -->
+        </div>
+
+        <div id = 'image-stack'>
+            <div id = 'deluge-div'>
+                <object id="delugeSVG" type="image/svg+xml" data="imgs/Deluge.svg"></object>
+            </div>
+            <!-- <object id="testGrid" type="image/svg+xml" data="imgs/Untitled.svg"></object> -->
+            <!-- <object id="lineSVG" type="image/svg+xml" data="imgs/testLine.svg" style="max-width: 50%;"></object> -->
+            
+        </div>
+
     </div>
     
     <script src="main.js"></script>
